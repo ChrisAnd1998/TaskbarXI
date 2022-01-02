@@ -9,6 +9,7 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 * Support multiple monitors.  
 * Support sepperate DPI scaling. 
 * Switch back to normal on maximized window.  
+* Support left and centered taskbar.
 
 &nbsp;
 
