@@ -32,6 +32,27 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                 wchar_t* title = new wchar_t[length];
                 GetClassName(tb, title, length);
 
+                //std::wcout << (title) << std::endl;
+                // Check if hWid is still valid if not find again
+                if (wcscmp(title, L"") == 0) {
+                    taskbar_Count = 0;
+                    taskbar_List[0] = 0;
+                    taskbar_List[1] = 0;
+                    taskbar_List[2] = 0;
+                    taskbar_List[3] = 0;
+                    taskbar_List[4] = 0;
+                    taskbar_List[5] = 0;
+                    taskbar_List[6] = 0;
+                    taskbar_List[7] = 0;
+                    taskbar_List[8] = 0;
+                    taskbar_List[9] = 0;
+
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                  
+                    EnumWindows(EnumCallbackFunction, NULL);
+                }
+               
+
                 // This is the main taskbar
                 if (wcscmp(title, L"Shell_TrayWnd") == 0) {
 
@@ -162,6 +183,8 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 
 BOOL CALLBACK EnumCallbackFunction(HWND hWND, LPARAM lParam) {
+    //taskbar_Count = 0;
+   // std::fill(taskbar_List, taskbar_List + 0, 0);
 
     int length = 256;
     wchar_t* title = new wchar_t[length];
