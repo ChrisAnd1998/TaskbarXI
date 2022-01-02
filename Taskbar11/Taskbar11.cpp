@@ -34,6 +34,18 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
     ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
 
     // Find all taskbar(s)
+    taskbar_Count = 0;
+    taskbar_List[0] = 0;
+    taskbar_List[1] = 0;
+    taskbar_List[2] = 0;
+    taskbar_List[3] = 0;
+    taskbar_List[4] = 0;
+    taskbar_List[5] = 0;
+    taskbar_List[6] = 0;
+    taskbar_List[7] = 0;
+    taskbar_List[8] = 0;
+    taskbar_List[9] = 0;
+
     EnumWindows(EnumCallbackTaskbars, NULL);
 
     std::wcout << "Initialize complete!" << std::endl;
@@ -69,7 +81,7 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
               
                 // Check if hWid is still valid if not find again
-                if (wcscmp(title, L"") == 0) {
+                if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
 
                     std::wcout << "hWID invalid!" << std::endl;
 
@@ -262,9 +274,8 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
         }
         std::wcout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
-
-       
     }
+
 }
 
 
