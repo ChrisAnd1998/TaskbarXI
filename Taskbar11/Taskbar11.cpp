@@ -1,7 +1,9 @@
 // TaskbarXI for Windows 11.
 // By Chris Andriessen 2022
 
-#define WIN32_LEAN_AND
+
+#define WIN32_LEAN_AND_MEAN
+#define NOT_BUILD_WINDOWS_DEPRECATE
 
 #include <iostream>
 #include <Windows.h>
@@ -18,11 +20,18 @@ int taskbar_Count;
 int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
+
+    std::wcout << "Initializing..." << std::endl;
+
+    std::wcout << "Looking for taskbars..." << std::endl;
+
     ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
 
     // Find all taskbar(s)
     EnumWindows(EnumCallbackFunction, NULL);
 
+    std::wcout << "Initialize complete!" << std::endl;
+    std::wcout << "Application is running!" << std::endl;
 
     for (;;) {
         for (HWND tb : taskbar_List)
@@ -35,6 +44,21 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                 //std::wcout << (title) << std::endl;
                 // Check if hWid is still valid if not find again
                 if (wcscmp(title, L"") == 0) {
+
+                    std::wcout << "hWID invalid!" << std::endl;
+
+                    HWND Explorer = NULL;
+
+                    do
+                    {
+                        std::wcout << "Looking for Explorer..." << std::endl;
+                        Explorer = FindWindow(0, L"Shell_TrayWnd");
+                        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+                    } while (Explorer != 0);
+
+                    std::wcout << "Explorer found!" << std::endl;
+                    std::wcout << "Resetting..." << std::endl;
+
                     taskbar_Count = 0;
                     taskbar_List[0] = 0;
                     taskbar_List[1] = 0;
@@ -47,9 +71,15 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                     taskbar_List[8] = 0;
                     taskbar_List[9] = 0;
 
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
                   
+                    std::wcout << "Initializing..." << std::endl;
+                    std::wcout << "Looking for taskbars..." << std::endl;
+
                     EnumWindows(EnumCallbackFunction, NULL);
+
+                    std::wcout << "Initialize complete!" << std::endl;
+                    std::wcout << "Application is running!" << std::endl;
                 }
                
 
@@ -94,6 +124,8 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 
                     SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
+
+                    
 
                 }
 
@@ -185,6 +217,8 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 BOOL CALLBACK EnumCallbackFunction(HWND hWND, LPARAM lParam) {
     //taskbar_Count = 0;
    // std::fill(taskbar_List, taskbar_List + 0, 0);
+    
+
 
     int length = 256;
     wchar_t* title = new wchar_t[length];
@@ -202,6 +236,8 @@ BOOL CALLBACK EnumCallbackFunction(HWND hWND, LPARAM lParam) {
         taskbar_List[taskbar_Count] = hWND;
         taskbar_Count += 1;
     }
+
+
 
     return true;
 }
