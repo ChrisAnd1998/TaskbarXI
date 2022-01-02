@@ -6,11 +6,11 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 * Turn the tray/clock into a dock.  
 * Support multiple monitors.  
 * Support sepperate DPI scaling. 
+* Change taskbar style based on maximized windows.  
 
 # Features (upcoming)
 * Simple GUI to change the settings.  
 * Change taskbar background style and color.  
-* Change taskbar style based on maximized windows.
 
 
 
