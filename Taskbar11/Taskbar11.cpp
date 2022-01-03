@@ -3,6 +3,7 @@
 
 #pragma comment (lib, "dwmapi.lib")
 
+
 #define WIN32_LEAN_AND_MEAN
 #define NOT_BUILD_WINDOWS_DEPRECATE
 
@@ -11,6 +12,10 @@
 #include <chrono>
 #include <thread>
 #include <dwmapi.h>
+#include <iostream>    
+#include <stdio.h>
+
+
 
 
 BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam);
@@ -24,7 +29,9 @@ int maximized_Count;
 int mtaskbar_Revert;
 int staskbar_Revert;
 
-int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+
+
+int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
     std::wcout << "Initializing..." << std::endl;
@@ -74,10 +81,64 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
             if (tb != 0) {
 
+                HWND curreg_Check_handle = FindWindow(0, L"Shell_TrayWnd");
+                HRGN curreg_Check_region = CreateRectRgn(0, 0, 0, 0);
+                GetWindowRgn(curreg_Check_handle, curreg_Check_region);
+
+            if (curreg_Check_region == 0) {
+                   std::wcout << "HRGN invalid!" << std::endl;
+
+                   HWND Explorer = NULL;
+
+                   do
+                   {
+                       std::wcout << "Looking for Explorer..." << std::endl;
+                       Explorer = FindWindow(0, L"Shell_TrayWnd");
+                       std::this_thread::sleep_for(std::chrono::milliseconds(250));
+                   } while (Explorer != 0);
+
+                   Explorer = NULL;
+
+                   std::wcout << "Explorer found!" << std::endl;
+                   std::wcout << "Resetting..." << std::endl;
+
+                   taskbar_Count = 0;
+                   taskbar_List[0] = 0;
+                   taskbar_List[1] = 0;
+                   taskbar_List[2] = 0;
+                   taskbar_List[3] = 0;
+                   taskbar_List[4] = 0;
+                   taskbar_List[5] = 0;
+                   taskbar_List[6] = 0;
+                   taskbar_List[7] = 0;
+                   taskbar_List[8] = 0;
+                   taskbar_List[9] = 0;
+
+                   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+
+                   std::string cur_dir(argv[0]);
+                   std::wstring chars = L"";
+                   chars += (wchar_t)34;
+                   std::string quote(chars.begin(), chars.end());
+
+                   system((quote + cur_dir + quote).c_str());
+
+                   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                   exit(0);
+                   abort;
+             }
+                   
+
+
+               curreg_Check_handle = NULL;
+               curreg_Check_region = NULL;
 
                 int length = 256;
                 wchar_t* title = new wchar_t[length];
                 GetClassName(tb, title, length);
+
+                std::wcout << "Looping for " << title << " @ " << tb << std::endl;
 
               
                 // Check if hWid is still valid if not find again
@@ -93,6 +154,8 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                         Explorer = FindWindow(0, L"Shell_TrayWnd");
                         std::this_thread::sleep_for(std::chrono::milliseconds(250));
                     } while (Explorer != 0);
+
+                    Explorer = NULL;
 
                     std::wcout << "Explorer found!" << std::endl;
                     std::wcout << "Resetting..." << std::endl;
@@ -110,14 +173,20 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                     taskbar_List[9] = 0;
 
                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                  
-                    std::wcout << "Initializing..." << std::endl;
-                    std::wcout << "Looking for taskbars..." << std::endl;
+                   
+                    
+                    std::string cur_dir(argv[0]);
+                    int pos = cur_dir.find_last_of("/\\");
+                    std::wstring chars = L"";
+                    chars += (wchar_t)34;
+                    std::string quote(chars.begin(), chars.end());
 
-                    EnumWindows(EnumCallbackTaskbars, NULL);
-
-                    std::wcout << "Initialize complete!" << std::endl;
-                    std::wcout << "Application is running!" << std::endl;
+                    
+                    system((quote + cur_dir + quote).c_str());
+                    //system(("taskkill /F /IM " + quote + cur_dir.substr(pos + 1) + quote).c_str());
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    exit(0);
+                    abort;
                 } // end failsafe
                
 
@@ -126,10 +195,10 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
                     HWND Shell_TrayWnd = tb;
                     HWND Start = FindWindowEx(Shell_TrayWnd, 0, L"Start", NULL);
+                    //HWND DesktopWindowContentBridge = FindWindowEx(Shell_TrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
                     HWND RebarWindow32 = FindWindowEx(Shell_TrayWnd, 0, L"RebarWindow32", NULL);
                     HWND MSTaskSwWClass = FindWindowEx(RebarWindow32, 0, L"MSTaskSwWClass", NULL);
                     HWND TrayNotifyWnd = FindWindowEx(Shell_TrayWnd, 0, L"TrayNotifyWnd", NULL);
-
 
                     RECT rect_Shell_TrayWnd;
                     GetWindowRect(Shell_TrayWnd, &rect_Shell_TrayWnd);
@@ -169,6 +238,7 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                                 HRGN region_Empty = CreateRectRgn(abs(rect_Shell_TrayWnd.left - rect_Shell_TrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left) * curDPI / 100, rect_Shell_TrayWnd.bottom * curDPI / 100);
                                 SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
                                 mtaskbar_Revert = 1;
+                                region_Empty = NULL;
                             }
                         }
                     }
@@ -178,9 +248,30 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                         HRGN region_Both = CreateRectRgn(0, 0, 0, 0);
                         CombineRgn(region_Both, region_ShellTrayWnd, region_TrayNotifyWnd, RGN_OR);
                         SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
+                        region_Both = NULL;
                     }
 
                     mtaskbar_Revert = 0;
+
+
+                    // dispose
+                    Shell_TrayWnd = NULL;
+                    Start = NULL;
+                    RebarWindow32 = NULL;
+                    MSTaskSwWClass = NULL;
+                    TrayNotifyWnd = NULL;
+                    curDPI = NULL;
+                    width_Shell_TrayWnd = NULL;
+                    height_Shell_TrayWnd = NULL;
+                    left = NULL;
+                    right = NULL;
+                    bottom = NULL;
+                    top = NULL;
+                    region_ShellTrayWnd = NULL;
+                    region_TrayNotifyWnd = NULL;
+
+                   
+
 
                     std::wcout << "Done with the main taskbar." << std::endl;
                 } //end primary taskbar
@@ -193,10 +284,14 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                     HWND Shell_SecondaryTrayWnd = tb;
                     HWND Start = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Start", NULL);
                     HWND WorkerW = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"WorkerW", NULL);
+                    HWND DesktopWindowContentBridge = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
                     HWND MSTaskListWClass = FindWindowEx(WorkerW, 0, L"MSTaskListWClass", NULL);
 
                     RECT rect_Shell_SecondaryTrayWnd;
                     GetWindowRect(Shell_SecondaryTrayWnd, &rect_Shell_SecondaryTrayWnd);
+
+                    RECT rect_DesktopWindowContentBridge;
+                    GetWindowRect(DesktopWindowContentBridge, &rect_DesktopWindowContentBridge);
 
                     RECT rect_Start;
                     GetWindowRect(Start, &rect_Start);
@@ -222,6 +317,7 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                                 HRGN region_Empty = CreateRectRgn(abs(rect_Shell_SecondaryTrayWnd.left - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_SecondaryTrayWnd.right - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, rect_Shell_SecondaryTrayWnd.bottom * curDPI / 100);
                                 SetWindowRgn(Shell_SecondaryTrayWnd, region_Empty, TRUE);
                                 staskbar_Revert = 1;
+                                region_Empty = NULL;
                             }
                         }
                     }
@@ -248,6 +344,11 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                                 HRGN region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 10, 10);
                                 //HRGN region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
                                 SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
+                                left = NULL;
+                                right = NULL;
+                                bottom = NULL;
+                                top = NULL;
+                                region_Shell_SecondaryTrayWnd = NULL;
                             }
 
                             //Left
@@ -260,11 +361,35 @@ int main() //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
                                 HRGN region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 10, 10);
                                 //HRGN region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
                                 SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
+                                left = NULL;
+                                right = NULL;
+                                bottom = NULL;
+                                top = NULL;
+                                region_Shell_SecondaryTrayWnd = NULL;
                             }
                         }
+
+                        hKey = NULL;
+                        buffer = NULL;
+                        result = NULL;
+                        type = NULL;
+                        size = NULL;
+
                     }
 
                     staskbar_Revert = 0;
+
+                    // dispose
+                    Shell_SecondaryTrayWnd = NULL;
+                    Start = NULL;
+                    WorkerW = NULL;
+                    MSTaskListWClass = NULL;
+                    curDPI = NULL;
+                    width_Shell_SecondaryTrayWnd = NULL;
+                    height_Shell_SecondaryTrayWnd = NULL;
+                    
+                 
+
 
                     std::wcout << "Done with a secondary taskbar." << std::endl;
                 } //end secondary taskbar
@@ -298,6 +423,9 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
         taskbar_Count += 1;
     }
 
+    hWND = NULL;
+    title = NULL;
+    length = NULL;
 
 
     return true;
@@ -323,6 +451,11 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
             }
         }
     }
+
+    wp.length = NULL;
+    wl = NULL;
+    Cloaked = NULL;
+    cl = NULL;
 
     return true;
 }
