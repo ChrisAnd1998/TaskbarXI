@@ -1,7 +1,9 @@
 # TaskbarXI
 An application written in C++ to modify the Windows 11 Taskbar. Current version turns the Windows 11 Taskbar into a dock. New features will be added in the future.  
+![TaskbarXI](https://user-images.githubusercontent.com/50437199/148023157-7d2c8a9d-cd82-499c-9a98-52d53625296a.png)
 
-&nbsp;
+
+
 
 **Features (at this moment)**
 * Turn the Windows 11 Taskbar into a dock.  
