@@ -53,6 +53,8 @@ VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, H
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     
+    
+
     working = 1;
     //SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
    // SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
@@ -94,6 +96,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
     cur_dir = std::string(buffer);// (argv[0]);
+
+   
+    //DWORD GetCurrentProcessId(HANDLE ytt);
+
+ 
+
+   
+
+    
+
+   // std::wstring chars = L"";
+   // chars += (wchar_t)34;
+   // std::string quote(chars.begin(), chars.end());
+
+   // WinExec((quote + cur_dir + quote).c_str(), SW_HIDE);
+
+
+
+
 
     SetTaskbar();
     
@@ -160,6 +181,7 @@ void SetTaskbar() {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         exit(0);
         abort;
+        
     }
 
 
@@ -236,13 +258,20 @@ void SetTaskbar() {
                 chars += (wchar_t)34;
                 std::string quote(chars.begin(), chars.end());
 
+                
 
                WinExec((quote + cur_dir + quote).c_str(), SW_HIDE);
-                // system(("taskkill /F /IM " + quote + cur_dir.substr(pos + 1) + quote).c_str());
+
+               //WinExec((quote + cur_dir + quote).c_str(), SW_HIDE);
+
+               //WinExec(("taskkill /F /IM " + quote + cur_dir.substr(pos + 1) + quote).c_str(), SW_HIDE);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+
                 exit(0);
                 abort;
+                
             } // end failsafe
 
 
@@ -323,10 +352,10 @@ void SetTaskbar() {
 
 
                     if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
-                        SetWindowRgn(Shell_TrayWnd, region_Both, FALSE);
+                        SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
                     } else {
                         if (rect_TrayNotifyWnd.left != trayleft) {
-                            SetWindowRgn(Shell_TrayWnd, region_Both, FALSE);
+                            SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
                             trayleft = rect_TrayNotifyWnd.left;
                             //SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
                         } else {
@@ -447,7 +476,7 @@ void SetTaskbar() {
                             //std::wcout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
 
                             if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
-                                SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, FALSE);
+                                SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
                             }
                             else {
                                 std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
@@ -478,7 +507,7 @@ void SetTaskbar() {
                             //std::wcout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
 
                             if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
-                                SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, FALSE);
+                                SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
                             }
                             else {
                                 std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
