@@ -68,7 +68,7 @@ BEGIN
         BLOCK "040004b0"
         BEGIN
             VALUE "CompanyName", "Chris Andriessen"
-            VALUE "FileDescription", "Windows 11 Taskbar Mod"
+            VALUE "FileDescription", "TaskbarXI"
             VALUE "FileVersion", "1.0.0.0"
             VALUE "InternalName", "Taskbar11.exe"
             VALUE "LegalCopyright", "Copyright (C) Chris Andriessen 2022"
@@ -82,6 +82,16 @@ BEGIN
         VALUE "Translation", 0x400, 1200
     END
 END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "C:\\Users\\Chris\\Desktop\\icon.ico"
 
 #endif    // English (United Kingdom) resources
 /////////////////////////////////////////////////////////////////////////////

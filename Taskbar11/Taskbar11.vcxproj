@@ -150,6 +150,9 @@
   <ItemGroup>
     <ResourceCompile Include="Taskbar11.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="C:\Users\Chris\Desktop\icon.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -34,6 +34,8 @@ int staskbar_Revert;
 int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
+    SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
+
     std::wcout << "Initializing..." << std::endl;
 
     std::wcout << "Looking for taskbars..." << std::endl;
@@ -59,6 +61,8 @@ int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE
     std::wcout << "Application is running!" << std::endl;
 
     for (;;) {
+
+        std::cout.clear();
 
         std::wcout << "Clearing maximized window list..." << std::endl;
 
@@ -114,7 +118,7 @@ int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE
                    taskbar_List[8] = 0;
                    taskbar_List[9] = 0;
 
-                   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                  // std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 
                    std::string cur_dir(argv[0]);
@@ -183,7 +187,8 @@ int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE
 
                     
                     system((quote + cur_dir + quote).c_str());
-                    //system(("taskkill /F /IM " + quote + cur_dir.substr(pos + 1) + quote).c_str());
+                   // system(("taskkill /F /IM " + quote + cur_dir.substr(pos + 1) + quote).c_str());
+
                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
                     exit(0);
                     abort;
@@ -206,11 +211,13 @@ int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE
                     RECT rect_Start;
                     GetWindowRect(Start, &rect_Start);
 
-                    RECT rect_TrayNotifyWnd;
-                    GetWindowRect(TrayNotifyWnd, &rect_TrayNotifyWnd);
-
                     RECT rect_MSTaskSwWClass;
                     GetWindowRect(MSTaskSwWClass, &rect_MSTaskSwWClass);
+
+                   // SetWindowPos(TrayNotifyWnd, NULL, rect_MSTaskSwWClass.right, 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+
+                    RECT rect_TrayNotifyWnd;
+                    GetWindowRect(TrayNotifyWnd, &rect_TrayNotifyWnd);
 
                     INT curDPI = GetDpiForWindow(Shell_TrayWnd) * 1.041666666666667;
 
@@ -221,6 +228,8 @@ int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE
                     int top = 2 * curDPI / 100;
                     int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
                     int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+
+                    
 
                     HRGN region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
                     HRGN region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left + 2) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
