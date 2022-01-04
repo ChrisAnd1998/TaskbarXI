@@ -46,8 +46,13 @@ VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, H
     
 }
 
-int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+
+
+
+//int main(int argc, char* argv[]) 
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    
     working = 1;
     //SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
    // SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
@@ -59,7 +64,10 @@ int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE
 
     std::wcout << "Looking for taskbars..." << std::endl;
 
-    ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+    //::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+    FreeConsole();
+    
+    
 
     // Find all taskbar(s)
     taskbar_Count = 0;
@@ -79,7 +87,13 @@ int main(int argc, char* argv[]) //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE
     std::wcout << "Initialize complete!" << std::endl;
     std::wcout << "Application is running!" << std::endl;
 
-    cur_dir = (argv[0]);
+
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+
+
+    cur_dir = std::string(buffer);// (argv[0]);
 
     SetTaskbar();
     
@@ -141,7 +155,7 @@ void SetTaskbar() {
         chars += (wchar_t)34;
         std::string quote(chars.begin(), chars.end());
 
-        system((quote + cur_dir + quote).c_str());
+        WinExec((quote + cur_dir + quote).c_str(), SW_HIDE);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         exit(0);
@@ -223,7 +237,7 @@ void SetTaskbar() {
                 std::string quote(chars.begin(), chars.end());
 
 
-                system((quote + cur_dir + quote).c_str());
+               WinExec((quote + cur_dir + quote).c_str(), SW_HIDE);
                 // system(("taskkill /F /IM " + quote + cur_dir.substr(pos + 1) + quote).c_str());
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
