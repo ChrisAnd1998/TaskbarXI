@@ -314,7 +314,8 @@ void SetTaskbar() {
                 int width_Shell_TrayWnd = (rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left);
                 int height_Shell_TrayWnd = (rect_Shell_TrayWnd.bottom - rect_Shell_TrayWnd.top);
 
-                int left = abs(rect_MSTaskSwWClass.right - width_Shell_TrayWnd - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                //int left = abs(rect_MSTaskSwWClass.right - width_Shell_TrayWnd - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                int left = abs(rect_Start.left - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
                 int top = 2 * curDPI / 100;
                 int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
                 int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
