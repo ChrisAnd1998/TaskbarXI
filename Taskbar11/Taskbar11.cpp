@@ -377,7 +377,9 @@ void SetTaskbar() {
                 //int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
                 //int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
                 //SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
-                //SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
+                
+                
+               // SendMessage(Shell_TrayWnd, WM_SIZING, 0x3, 0x0354D4D0);
 
                 int left;
                 int top;
@@ -689,9 +691,11 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
         if (Cloaked == 0) {
             if (wl and WS_VISIBLE == WS_VISIBLE) {
                 if ((wl | WS_MAXIMIZE) == wl) {
-                    //std::wcout << hWND << wl << std::endl;
-                    maximized_List[maximized_Count] = hWND;
-                    maximized_Count += 1;
+                    if ((wl | WS_VISIBLE) == wl) {
+                        //std::wcout << hWND << wl << std::endl;
+                        maximized_List[maximized_Count] = hWND;
+                        maximized_Count += 1;
+                    }
                 }
 
             }
