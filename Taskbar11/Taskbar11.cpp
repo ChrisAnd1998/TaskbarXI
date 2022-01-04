@@ -208,6 +208,47 @@ void SetTaskbar() {
 
         if (tb != 0) {
 
+
+            int taskbariscenter;
+
+            HKEY hKey;
+            DWORD buffer;
+            LONG result;
+            unsigned long type = REG_DWORD, size = 1024;
+
+            result = RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", 0, KEY_READ, &hKey);
+            if (result == ERROR_SUCCESS)
+            {
+                RegQueryValueEx(hKey, L"TaskbarAl", NULL, &type, (LPBYTE)&buffer, &size);
+             
+                RegCloseKey(hKey);
+
+                if (size == 1024) { //Registry key has never been set so i assume it is centered.
+                    taskbariscenter = 1;
+                } else {
+                    
+                    if (buffer == 1) {
+                        taskbariscenter = 1;
+                    }
+                    if (buffer == 0) {
+                        taskbariscenter = 0;
+                    }
+                 }
+
+                
+
+            }
+
+            hKey = NULL;
+            buffer = NULL;
+            result = NULL;
+            type = NULL;
+            size = NULL;
+
+
+
+
+
             curreg_Check_handle = NULL;
             curreg_Check_region = NULL;
 
@@ -285,6 +326,8 @@ void SetTaskbar() {
                 HWND MSTaskSwWClass = FindWindowEx(RebarWindow32, 0, L"MSTaskSwWClass", NULL);
                 HWND TrayNotifyWnd = FindWindowEx(Shell_TrayWnd, 0, L"TrayNotifyWnd", NULL);
 
+                SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
+
                //SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
                 HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
                 GetWindowRgn(tb, currenttbreg);
@@ -297,6 +340,13 @@ void SetTaskbar() {
                 RECT rect_Start;
                 GetWindowRect(Start, &rect_Start);
 
+
+
+                
+
+
+
+
                 RECT rect_MSTaskSwWClass;
                 GetWindowRect(MSTaskSwWClass, &rect_MSTaskSwWClass);
 
@@ -305,9 +355,13 @@ void SetTaskbar() {
                 RECT rect_TrayNotifyWnd;
                 GetWindowRect(TrayNotifyWnd, &rect_TrayNotifyWnd);
 
-                
+
+              
 
                 INT curDPI = GetDpiForWindow(Shell_TrayWnd) * 1.041666666666667;
+
+
+                
 
 
 
@@ -315,10 +369,36 @@ void SetTaskbar() {
                 int height_Shell_TrayWnd = (rect_Shell_TrayWnd.bottom - rect_Shell_TrayWnd.top);
 
                 //int left = abs(rect_MSTaskSwWClass.right - width_Shell_TrayWnd - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-                int left = abs(rect_Start.left - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-                int top = 2 * curDPI / 100;
-                int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-                int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+                //SendMessage(Start, WM_SETREDRAW, TRUE, NULL);
+
+                
+                //int left = abs(rect_Start.left - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                //int top = 2 * curDPI / 100;
+                //int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                //int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+                //SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
+                //SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
+
+                int left;
+                int top;
+                int right;
+                int bottom;
+               
+              
+                if (taskbariscenter == 1) {
+                    left = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100;
+                    top = 2 * curDPI / 100;
+                    right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                    bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+                }
+
+                if (taskbariscenter == 0) {
+                    left = abs( rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                    top = 2 * curDPI / 100;
+                    right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                    bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+                }
+                
 
                 HRGN region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
                 HRGN region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
@@ -367,7 +447,7 @@ void SetTaskbar() {
                     region_Both = NULL;
                 }
 
-                
+              
 
                 
                 // HRGN region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
@@ -400,7 +480,8 @@ void SetTaskbar() {
 
 
 
-
+                SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
+                SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
                 
             } //end primary taskbar
 
@@ -414,6 +495,8 @@ void SetTaskbar() {
                 HWND WorkerW = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"WorkerW", NULL);
                 HWND DesktopWindowContentBridge = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
                 HWND MSTaskListWClass = FindWindowEx(WorkerW, 0, L"MSTaskListWClass", NULL);
+
+                SendMessage(Shell_SecondaryTrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
 
                 HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
                 GetWindowRgn(tb, currenttbreg);
@@ -455,23 +538,15 @@ void SetTaskbar() {
                     }
                 }
 
+                SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
+                SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
+
                 if (staskbar_Revert == 0) {
-                    HKEY hKey;
-                    DWORD buffer;
-                    LONG result;
-                    unsigned long type = REG_DWORD, size = 1024;
-
-                    result = RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", 0, KEY_READ, &hKey);
-                    if (result == ERROR_SUCCESS)
-                    {
-                        RegQueryValueEx(hKey, L"TaskbarAl", NULL, &type, (LPBYTE)&buffer, &size);
-                        RegCloseKey(hKey);
-
-                        //Center
-                        if (buffer == 1) {
-                            int left = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 2) * curDPI / 100;
+                    
+                        if (taskbariscenter == 1) {
+                            int left = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.right + 2) * curDPI / 100;
                             int top = 2 * curDPI / 100;
-                            int right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.right + 1) * curDPI / 100;
+                            int right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 1) * curDPI / 100;
                             int bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
 
                             HRGN region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 10, 10);
@@ -498,9 +573,9 @@ void SetTaskbar() {
                             region_Shell_SecondaryTrayWnd = NULL;
                         }
 
-                        //Left
-                        if (buffer == 0) {
-                            int left = abs(rect_Start.left - rect_Shell_SecondaryTrayWnd.left + 2) * curDPI / 100;
+
+                        if (taskbariscenter == 0) {
+                            int left = abs(rect_Shell_SecondaryTrayWnd.left - rect_Shell_SecondaryTrayWnd.left + 2) * curDPI / 100;
                             int top = 2 * curDPI / 100;
                             int right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 1) * curDPI / 100;
                             int bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
@@ -528,13 +603,9 @@ void SetTaskbar() {
                             top = NULL;
                             region_Shell_SecondaryTrayWnd = NULL;
                         }
-                    }
+                    
 
-                    hKey = NULL;
-                    buffer = NULL;
-                    result = NULL;
-                    type = NULL;
-                    size = NULL;
+                    
 
                 }
 
@@ -554,8 +625,8 @@ void SetTaskbar() {
                 height_Shell_SecondaryTrayWnd = NULL;
 
 
-
-
+                SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
+                SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
                
             } //end secondary taskbar
 
@@ -581,12 +652,18 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
         std::wcout << "Main taskbar found! @ hWid : " << hWND << std::endl;
         taskbar_List[taskbar_Count] = hWND;
         taskbar_Count += 1;
+        SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
+        SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
+
     }
 
     if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
         std::wcout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
         taskbar_List[taskbar_Count] = hWND;
         taskbar_Count += 1;
+        SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
+        SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
+
     }
 
     hWND = NULL;
@@ -611,9 +688,12 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
     if (wp.showCmd == 3) {
         if (Cloaked == 0) {
             if (wl and WS_VISIBLE == WS_VISIBLE) {
-                //std::wcout << hWND << std::endl;
-                maximized_List[maximized_Count] = hWND;
-                maximized_Count += 1;
+                if ((wl | WS_MAXIMIZE) == wl) {
+                    //std::wcout << hWND << wl << std::endl;
+                    maximized_List[maximized_Count] = hWND;
+                    maximized_Count += 1;
+                }
+
             }
         }
     }
