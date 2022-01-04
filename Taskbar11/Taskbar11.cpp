@@ -311,175 +311,62 @@ void SetTaskbar() {
 
 
 
-                HKEY hKey;
-                DWORD buffer;
-                LONG result;
-                unsigned long type = REG_DWORD, size = 1024;
+                int width_Shell_TrayWnd = (rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left);
+                int height_Shell_TrayWnd = (rect_Shell_TrayWnd.bottom - rect_Shell_TrayWnd.top);
 
-                result = RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", 0, KEY_READ, &hKey);
-                if (result == ERROR_SUCCESS)
-                {
-                    RegQueryValueEx(hKey, L"TaskbarAl", NULL, &type, (LPBYTE)&buffer, &size);
-                    RegCloseKey(hKey);
+                int left = abs(rect_MSTaskSwWClass.right - width_Shell_TrayWnd - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                int top = 2 * curDPI / 100;
+                int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
+                int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
 
-                    //Center
-                    if (buffer == 1) {
+                HRGN region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
+                HRGN region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
 
-                        int width_Shell_TrayWnd = (rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left);
-                        int height_Shell_TrayWnd = (rect_Shell_TrayWnd.bottom - rect_Shell_TrayWnd.top);
-
-                        int left = abs(rect_MSTaskSwWClass.right - width_Shell_TrayWnd - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-                        int top = 2 * curDPI / 100;
-                        int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-                        int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
-
-                        HRGN region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
-                        HRGN region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
-
-                        mtaskbar_Revert = 0;
-                        for (HWND mx1 : maximized_List) {
-                            if (mx1 != 0) {
-                                HMONITOR tbm1 = MonitorFromWindow(Shell_TrayWnd, MONITOR_DEFAULTTONEAREST);
-                                HMONITOR wm1 = MonitorFromWindow(mx1, MONITOR_DEFAULTTONEAREST);
-                                if (tbm1 == wm1) {
-                                    std::wcout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
-                                    HRGN region_Empty = CreateRectRgn(abs(rect_Shell_TrayWnd.left - rect_Shell_TrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left) * curDPI / 100, rect_Shell_TrayWnd.bottom * curDPI / 100);
-                                    SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
-                                    mtaskbar_Revert = 1;
-                                    region_Empty = NULL;
-                                }
-                            }
+                mtaskbar_Revert = 0;
+                for (HWND mx1 : maximized_List) {
+                    if (mx1 != 0) {
+                        HMONITOR tbm1 = MonitorFromWindow(Shell_TrayWnd, MONITOR_DEFAULTTONEAREST);
+                        HMONITOR wm1 = MonitorFromWindow(mx1, MONITOR_DEFAULTTONEAREST);
+                        if (tbm1 == wm1) {
+                            std::wcout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
+                            HRGN region_Empty = CreateRectRgn(abs(rect_Shell_TrayWnd.left - rect_Shell_TrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left) * curDPI / 100, rect_Shell_TrayWnd.bottom * curDPI / 100);
+                            SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
+                            mtaskbar_Revert = 1;
+                            region_Empty = NULL;
                         }
-
-
-                        if (mtaskbar_Revert == 0) {
-                            HRGN region_Both = CreateRectRgn(0, 0, 0, 0);
-                            CombineRgn(region_Both, region_ShellTrayWnd, region_TrayNotifyWnd, RGN_OR);
-
-                            RECT newtbrect;
-                            GetRgnBox(region_ShellTrayWnd, &newtbrect);
-
-                            // std::wcout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
-
-
-                            if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
-                                SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
-                            }
-                            else {
-                                if (rect_TrayNotifyWnd.left != trayleft) {
-                                    SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
-                                    trayleft = rect_TrayNotifyWnd.left;
-                                    //SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
-                                }
-                                else {
-                                    std::wcout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
-                                }
-
-                            }
-
-                            region_Both = NULL;
-                        }
-
-                        width_Shell_TrayWnd = NULL;
-                        height_Shell_TrayWnd = NULL;
-                        left = NULL;
-                        right = NULL;
-                        bottom = NULL;
-                        top = NULL;
-                        region_ShellTrayWnd = NULL;
-                        region_TrayNotifyWnd = NULL;
-
-                        mtaskbar_Revert = 0;
-
-
                     }
-
-
-
-
-
-
-
-                    if (buffer == 0) {
-
-                        int width_Shell_TrayWnd = (rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left);
-                        int height_Shell_TrayWnd = (rect_Shell_TrayWnd.bottom - rect_Shell_TrayWnd.top);
-
-                        int left = abs(rect_Start.left - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-                        int top = 2 * curDPI / 100;
-                        int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-                        int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
-
-                        HRGN region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
-                        HRGN region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
-
-                        mtaskbar_Revert = 0;
-                        for (HWND mx1 : maximized_List) {
-                            if (mx1 != 0) {
-                                HMONITOR tbm1 = MonitorFromWindow(Shell_TrayWnd, MONITOR_DEFAULTTONEAREST);
-                                HMONITOR wm1 = MonitorFromWindow(mx1, MONITOR_DEFAULTTONEAREST);
-                                if (tbm1 == wm1) {
-                                    std::wcout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
-                                    HRGN region_Empty = CreateRectRgn(abs(rect_Shell_TrayWnd.left - rect_Shell_TrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left) * curDPI / 100, rect_Shell_TrayWnd.bottom * curDPI / 100);
-                                    SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
-                                    mtaskbar_Revert = 1;
-                                    region_Empty = NULL;
-                                }
-                            }
-                        }
-
-
-                        if (mtaskbar_Revert == 0) {
-                            HRGN region_Both = CreateRectRgn(0, 0, 0, 0);
-                            CombineRgn(region_Both, region_ShellTrayWnd, region_TrayNotifyWnd, RGN_OR);
-
-                            RECT newtbrect;
-                            GetRgnBox(region_ShellTrayWnd, &newtbrect);
-
-                            // std::wcout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
-
-
-                            if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
-                                SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
-                            }
-                            else {
-                                if (rect_TrayNotifyWnd.left != trayleft) {
-                                    SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
-                                    trayleft = rect_TrayNotifyWnd.left;
-                                    //SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
-                                }
-                                else {
-                                    std::wcout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
-                                }
-
-                            }
-
-                            region_Both = NULL;
-                        }
-
-                        width_Shell_TrayWnd = NULL;
-                        height_Shell_TrayWnd = NULL;
-                        left = NULL;
-                        right = NULL;
-                        bottom = NULL;
-                        top = NULL;
-                        region_ShellTrayWnd = NULL;
-                        region_TrayNotifyWnd = NULL;
-
-                        mtaskbar_Revert = 0;
-
-
-                    }
-
-
-
-
-
-
-
-
-
                 }
+
+
+                if (mtaskbar_Revert == 0) {
+                    HRGN region_Both = CreateRectRgn(0, 0, 0, 0);
+                    CombineRgn(region_Both, region_ShellTrayWnd, region_TrayNotifyWnd, RGN_OR);
+
+                    RECT newtbrect;
+                    GetRgnBox(region_ShellTrayWnd, &newtbrect);
+
+                    // std::wcout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
+
+
+                    if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
+                        SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
+                    }
+                    else {
+                        if (rect_TrayNotifyWnd.left != trayleft) {
+                            SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
+                            trayleft = rect_TrayNotifyWnd.left;
+                            //SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
+                        }
+                        else {
+                            std::wcout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
+                        }
+
+                    }
+
+                    region_Both = NULL;
+                }
+
+                
 
                 
                 // HRGN region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
@@ -499,7 +386,16 @@ void SetTaskbar() {
                 MSTaskSwWClass = NULL;
                 TrayNotifyWnd = NULL;
                 curDPI = NULL;
-                
+                width_Shell_TrayWnd = NULL;
+                height_Shell_TrayWnd = NULL;
+                left = NULL;
+                right = NULL;
+                bottom = NULL;
+                top = NULL;
+                region_ShellTrayWnd = NULL;
+                region_TrayNotifyWnd = NULL;
+
+                mtaskbar_Revert = 0;
 
 
 
