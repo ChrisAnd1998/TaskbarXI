@@ -12,6 +12,7 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 * Support sepperate DPI scaling. 
 * Switch back to normal on maximized window.  
 * Support left and centered taskbar.
+* Tray icon to exit TaskbarXI and revert to the default taskbar.
 
 &nbsp;
 
