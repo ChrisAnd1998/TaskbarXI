@@ -48,6 +48,7 @@ VOID SetTaskbar();
 int square;
 int ignoremax;
 int notray;
+int hidetraywnd;
 
 //VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 //{
@@ -182,7 +183,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::wcout << "Looking for taskbars..." << std::endl;
 
-	//::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+	//::ShowWindow(::GetConsoleWindow(), SW_SHOW);
 	FreeConsole();
 
 	// Find all taskbar(s)
@@ -219,6 +220,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		if (wcscmp(szArgList[i], L"-notray") == 0) {
 			notray = 1;
+		}
+		if (wcscmp(szArgList[i], L"-hidetraywnd") == 0) {
+			hidetraywnd = 1;
 		}
 	}
 
@@ -508,7 +512,12 @@ void SetTaskbar() {
 
 				if (mtaskbar_Revert == 0) {
 					HRGN region_Both = CreateRectRgn(0, 0, 0, 0);
-					CombineRgn(region_Both, region_ShellTrayWnd, region_TrayNotifyWnd, RGN_OR);
+					if (hidetraywnd == 0) {
+						CombineRgn(region_Both, region_ShellTrayWnd, region_TrayNotifyWnd, RGN_OR);
+					}
+					else {
+						region_Both = region_ShellTrayWnd;
+					}
 
 					RECT newtbrect;
 					GetRgnBox(region_ShellTrayWnd, &newtbrect);
