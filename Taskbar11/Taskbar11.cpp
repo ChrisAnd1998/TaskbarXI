@@ -44,6 +44,11 @@ int trayleft;
 void initTray(HWND parent);
 VOID SetTaskbar();
 
+//Settings
+int square;
+int ignoremax;
+int notray;
+
 //VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 //{
 //
@@ -169,7 +174,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	wcscpy_s(nid.szTip, L"TaskbarXI");
 
 	Shell_NotifyIcon(NIM_DELETE, &nid);
-	Shell_NotifyIcon(NIM_ADD, &nid);
 
 	//ShowWindow(tray_hwnd, WM_SHOWWINDOW);
 	//End setup Notifyicon
@@ -207,9 +211,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (wcscmp(szArgList[i], L"-stop") == 0) {
 			exiting();
 		}
+		if (wcscmp(szArgList[i], L"-square") == 0) {
+			square = 1;
+		}
+		if (wcscmp(szArgList[i], L"-ignoremax") == 0) {
+			ignoremax = 1;
+		}
+		if (wcscmp(szArgList[i], L"-notray") == 0) {
+			notray = 1;
+		}
 	}
 
 	LocalFree(szArgList);
+
+	if (notray == 0) {
+		// Finalize tray icon
+		Shell_NotifyIcon(NIM_ADD, &nid);
+	}
 
 	std::wcout << "Initialize complete!" << std::endl;
 	std::wcout << "Application is running!" << std::endl;
@@ -283,22 +301,24 @@ void SetTaskbar() {
 		abort;
 	}
 
-	std::wcout << "Clearing maximized window list..." << std::endl;
+	if (ignoremax == 0) {
+		std::wcout << "Clearing maximized window list..." << std::endl;
 
-	maximized_Count = 0;
-	maximized_List[0] = 0;
-	maximized_List[1] = 0;
-	maximized_List[2] = 0;
-	maximized_List[3] = 0;
-	maximized_List[4] = 0;
-	maximized_List[5] = 0;
-	maximized_List[6] = 0;
-	maximized_List[7] = 0;
-	maximized_List[8] = 0;
-	maximized_List[9] = 0;
-	maximized_List[10] = 0;
+		maximized_Count = 0;
+		maximized_List[0] = 0;
+		maximized_List[1] = 0;
+		maximized_List[2] = 0;
+		maximized_List[3] = 0;
+		maximized_List[4] = 0;
+		maximized_List[5] = 0;
+		maximized_List[6] = 0;
+		maximized_List[7] = 0;
+		maximized_List[8] = 0;
+		maximized_List[9] = 0;
+		maximized_List[10] = 0;
 
-	EnumWindows(EnumCallbackMaximized, NULL);
+		EnumWindows(EnumCallbackMaximized, NULL);
+	}
 
 	for (HWND tb : taskbar_List) {
 		if (tb != 0) {
@@ -459,8 +479,17 @@ void SetTaskbar() {
 					bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
 				}
 
-				HRGN region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
-				HRGN region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
+				HRGN region_ShellTrayWnd;
+				HRGN region_TrayNotifyWnd;
+
+				if (square == 0) {
+					region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
+					region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
+				}
+				else {
+					region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
+					region_TrayNotifyWnd = CreateRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom);
+				}
 
 				mtaskbar_Revert = 0;
 				for (HWND mx1 : maximized_List) {
@@ -588,6 +617,15 @@ void SetTaskbar() {
 					bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
 				}
 
+				HRGN region_Shell_SecondaryTrayWnd;
+
+				if (square == 0) {
+					region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
+				}
+				else {
+					region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
+				}
+
 				staskbar_Revert = 0;
 				for (HWND mx2 : maximized_List) {
 					if (mx2 != 0) {
@@ -604,7 +642,6 @@ void SetTaskbar() {
 				}
 
 				if (staskbar_Revert == 0) {
-					HRGN region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 10, 10);
 					//HRGN region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
 
 					RECT newtbrect;
