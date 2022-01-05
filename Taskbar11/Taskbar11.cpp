@@ -311,7 +311,7 @@ void SetTaskbar() {
 				//int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
 				//SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
 
-			    //SendMessage(Shell_TrayWnd, WM_SIZING, 0x3, 0x0354D4D0);
+				//SendMessage(Shell_TrayWnd, WM_SIZING, 0x3, 0x0354D4D0);
 
 				int left;
 				int top;
@@ -439,6 +439,28 @@ void SetTaskbar() {
 				int width_Shell_SecondaryTrayWnd = (rect_Shell_SecondaryTrayWnd.right - rect_Shell_SecondaryTrayWnd.left);
 				int height_Shell_SecondaryTrayWnd = (rect_Shell_SecondaryTrayWnd.bottom - rect_Shell_SecondaryTrayWnd.top);
 
+				SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
+				SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
+
+				int left;
+				int top;
+				int right;
+				int bottom;
+
+				if (taskbariscenter == 1) {
+					left = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.right + 2) * curDPI / 100;
+					top = 2 * curDPI / 100;
+					right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 1) * curDPI / 100;
+					bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
+				}
+
+				if (taskbariscenter == 0) {
+					left = abs(rect_Shell_SecondaryTrayWnd.left - rect_Shell_SecondaryTrayWnd.left + 2) * curDPI / 100;
+					top = 2 * curDPI / 100;
+					right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 1) * curDPI / 100;
+					bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
+				}
+
 				staskbar_Revert = 0;
 				for (HWND mx2 : maximized_List) {
 					if (mx2 != 0) {
@@ -454,67 +476,24 @@ void SetTaskbar() {
 					}
 				}
 
-				SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
-				SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
-
 				if (staskbar_Revert == 0) {
-					if (taskbariscenter == 1) {
-						int left = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.right + 2) * curDPI / 100;
-						int top = 2 * curDPI / 100;
-						int right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 1) * curDPI / 100;
-						int bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
+					HRGN region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 10, 10);
+					//HRGN region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
 
-						HRGN region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 10, 10);
-						//HRGN region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
+					RECT newtbrect;
+					GetRgnBox(region_Shell_SecondaryTrayWnd, &newtbrect);
 
-						RECT newtbrect;
-						GetRgnBox(region_Shell_SecondaryTrayWnd, &newtbrect);
+					//std::wcout << newtbrect.left << std::endl;
+					//std::wcout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
 
-						//std::wcout << newtbrect.left << std::endl;
-						//std::wcout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
-
-						if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
-							SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
-						}
-						else {
-							std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
-						}
-
-						left = NULL;
-						right = NULL;
-						bottom = NULL;
-						top = NULL;
-						region_Shell_SecondaryTrayWnd = NULL;
+					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
+						SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
+					}
+					else {
+						std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
 					}
 
-					if (taskbariscenter == 0) {
-						int left = abs(rect_Shell_SecondaryTrayWnd.left - rect_Shell_SecondaryTrayWnd.left + 2) * curDPI / 100;
-						int top = 2 * curDPI / 100;
-						int right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 1) * curDPI / 100;
-						int bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
-
-						HRGN region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 10, 10);
-						//HRGN region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
-
-						RECT newtbrect;
-						GetRgnBox(region_Shell_SecondaryTrayWnd, &newtbrect);
-
-						//std::wcout << newtbrect.left << std::endl;
-						//std::wcout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
-
-						if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
-							SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
-						}
-						else {
-							std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
-						}
-
-						left = NULL;
-						right = NULL;
-						bottom = NULL;
-						top = NULL;
-						region_Shell_SecondaryTrayWnd = NULL;
-					}
+					region_Shell_SecondaryTrayWnd = NULL;
 				}
 
 				staskbar_Revert = 0;
@@ -522,6 +501,10 @@ void SetTaskbar() {
 				std::wcout << "Done with " << title << " @ " << Shell_SecondaryTrayWnd << std::endl;
 
 				// dispose
+				left = NULL;
+				right = NULL;
+				bottom = NULL;
+				top = NULL;
 				currenttbreg = NULL;
 				Shell_SecondaryTrayWnd = NULL;
 				Start = NULL;
