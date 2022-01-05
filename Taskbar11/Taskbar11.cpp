@@ -15,6 +15,13 @@
 #include <iostream>
 #include <stdio.h>
 
+//Notifyicon
+#include <shellapi.h>
+#include "resource.h"
+#define APPWM_ICONNOTIFY (WM_APP + 1)
+#define WM_NOTIFY_TB 3141
+NOTIFYICONDATA nid = {};
+
 std::string cur_dir;
 
 int working;
@@ -44,13 +51,60 @@ VOID SetTaskbar();
 //
 //}
 
+// MessageBox(NULL, L"Tray icon double clicked!", L"clicked", MB_OK);
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case APPWM_ICONNOTIFY:
+	{
+		switch (lParam)
+		{
+		case WM_LBUTTONUP:
+			if (MessageBoxA(NULL, "Do you want to EXIT TaskbarXI?", "TaskbarXI", MB_YESNO) == IDYES)
+			{
+				std::wcout << "Exiting TaskbarXI..." << std::endl;
+
+				Shell_NotifyIcon(NIM_DELETE, &nid);
+
+				for (HWND tb : taskbar_List) {
+					if (tb != 0) {
+						RECT rect_tb;
+						GetWindowRect(tb, &rect_tb);
+
+						INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
+
+						HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
+						SetWindowRgn(tb, region_Empty, TRUE);
+					}
+				}
+
+				exit(0);
+			}
+			else
+			{
+			}
+			break;
+		case WM_RBUTTONUP:
+
+			break;
+		}
+
+		return 0;
+	}
+	}
+
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
 //int main(int argc, char* argv[])
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	working = 1;
 	//SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
-   //SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
-   //SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	//SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	//SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 
 	SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 
@@ -68,6 +122,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	std::wcout << "Explorer found!" << std::endl;
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+	//Setup Notifyicon
+	MSG msg;
+
+	WNDCLASSEX wnd = { 0 };
+
+	wnd.hInstance = hInstance;
+	wnd.lpszClassName = L"TaskbarXI";
+	wnd.lpfnWndProc = WndProc;
+	wnd.style = CS_HREDRAW | CS_VREDRAW;
+	wnd.cbSize = sizeof(WNDCLASSEX);
+
+	wnd.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
+	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
+	RegisterClassEx(&wnd);
+
+	HWND tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TaskbarXI", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0, 400, 400, NULL, NULL, hInstance, NULL);
+
+	nid.cbSize = sizeof(nid);
+	nid.hWnd = tray_hwnd;
+	nid.uID = 1;
+	nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	nid.uCallbackMessage = APPWM_ICONNOTIFY;
+	nid.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
+	wcscpy_s(nid.szTip, L"TaskbarXI");
+
+	Shell_NotifyIcon(NIM_DELETE, &nid);
+	Shell_NotifyIcon(NIM_ADD, &nid);
+
+	//ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+	//End setup Notifyicon
 
 	Explorer = NULL;
 
@@ -102,7 +188,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	SetTaskbar();
 
-	// MSG msg;
 	for (;;) {//while (GetMessage(&msg, NULL, 0, 0)) {
 		//TranslateMessage(&msg);
 		//DispatchMessage(&msg);
