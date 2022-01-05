@@ -57,7 +57,7 @@ VOID SetTaskbar();
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch (uMsg)
+switch (uMsg)
 	{
 	case APPWM_ICONNOTIFY:
 	{
@@ -214,9 +214,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::atexit(exiting);
 
-	for (;;) {//while (GetMessage(&msg, NULL, 0, 0)) {
-		//TranslateMessage(&msg);
-		//DispatchMessage(&msg);
+	while (GetMessage(&msg, NULL, 0, 0)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 		SetTaskbar();
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	}
