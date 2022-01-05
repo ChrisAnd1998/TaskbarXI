@@ -64,7 +64,7 @@ switch (uMsg)
 		switch (lParam)
 		{
 		case WM_LBUTTONUP:
-			if (MessageBoxA(NULL, "Do you want to EXIT TaskbarXI?", "TaskbarXI", MB_YESNO) == IDYES) 
+			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
 			{
 				std::wcout << "Exiting TaskbarXI..." << std::endl;
 
@@ -83,17 +83,12 @@ switch (uMsg)
 				}
 
 				exit(0);
-			}
-			else
-			{
-			}
-			break;
-		case WM_RBUTTONUP:
 
+			} else {
+				//continue
+			}
 			break;
 		}
-
-		return 0;
 	}
 	}
 
@@ -214,11 +209,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::atexit(exiting);
 
-	while (GetMessage(&msg, NULL, 0, 0)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-		SetTaskbar();
+	for (;;){ //while (GetMessage(&msg, NULL, 0, 0)) {
+		PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+		//TranslateMessage(&msg);
+		//DispatchMessage(&msg);
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		SetTaskbar();
 	}
 }
 
