@@ -64,7 +64,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (lParam)
 		{
 		case WM_LBUTTONUP:
-			if (MessageBoxA(NULL, "Do you want to EXIT TaskbarXI?", "TaskbarXI", MB_YESNO) == IDYES)
+			if (MessageBoxA(NULL, "Do you want to EXIT TaskbarXI?", "TaskbarXI", MB_YESNO) == IDYES) 
 			{
 				std::wcout << "Exiting TaskbarXI..." << std::endl;
 
@@ -290,6 +290,12 @@ void SetTaskbar() {
 
 	for (HWND tb : taskbar_List) {
 		if (tb != 0) {
+
+			//SendMessage(tb, WM_ERASEBKGND, TRUE, NULL);
+			//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
+			//SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
+
+
 			int taskbariscenter;
 
 			HKEY hKey;
@@ -511,7 +517,7 @@ void SetTaskbar() {
 
 				mtaskbar_Revert = 0;
 
-				SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
+				//SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
 				//SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
 			} //end primary taskbar
 
@@ -550,7 +556,7 @@ void SetTaskbar() {
 				int width_Shell_SecondaryTrayWnd = (rect_Shell_SecondaryTrayWnd.right - rect_Shell_SecondaryTrayWnd.left);
 				int height_Shell_SecondaryTrayWnd = (rect_Shell_SecondaryTrayWnd.bottom - rect_Shell_SecondaryTrayWnd.top);
 
-				SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
+				//SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
 				//SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
 
 				int left;
@@ -625,7 +631,7 @@ void SetTaskbar() {
 				width_Shell_SecondaryTrayWnd = NULL;
 				height_Shell_SecondaryTrayWnd = NULL;
 
-				SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
+				//SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
 				//SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
 			} //end secondary taskbar
 		}
