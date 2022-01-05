@@ -196,6 +196,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	EnumWindows(EnumCallbackTaskbars, NULL);
 
+	// look for commandline
+	LPWSTR* szArgList;
+	int argCount;
+
+	szArgList = CommandLineToArgvW(GetCommandLine(), &argCount);
+
+	for (int i = 0; i < argCount; i++)
+	{
+		if (wcscmp(szArgList[i], L"-stop") == 0) {
+			exiting();
+		}
+	}
+
+	LocalFree(szArgList);
+
 	std::wcout << "Initialize complete!" << std::endl;
 	std::wcout << "Application is running!" << std::endl;
 
