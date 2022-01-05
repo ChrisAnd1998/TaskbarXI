@@ -14,6 +14,7 @@
 #include <dwmapi.h>
 #include <iostream>
 #include <stdio.h>
+#include <Oleacc.h>
 
 //Notifyicon
 #include <shellapi.h>
@@ -28,6 +29,7 @@ int working;
 
 BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam);
 BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam);
+BOOL CALLBACK EnumCallbackInstances(HWND hWND, LPARAM lParam);
 
 HWND maximized_List[10];
 HWND taskbar_List[10];
@@ -98,9 +100,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
+void exiting() {
+	std::wcout << "Exiting TaskbarXI..." << std::endl;
+
+	Shell_NotifyIcon(NIM_DELETE, &nid);
+
+	for (HWND tb : taskbar_List) {
+		if (tb != 0) {
+			RECT rect_tb;
+			GetWindowRect(tb, &rect_tb);
+
+			INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
+
+			HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
+			SetWindowRgn(tb, region_Empty, TRUE);
+		}
+	}
+
+	exit(0);
+}
+
 //int main(int argc, char* argv[])
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	EnumWindows(EnumCallbackInstances, NULL);
+
 	working = 1;
 	//SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	//SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
@@ -187,6 +211,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	cur_dir = std::string(buffer);// (argv[0]);
 
 	SetTaskbar();
+
+	std::atexit(exiting);
 
 	for (;;) {//while (GetMessage(&msg, NULL, 0, 0)) {
 		//TranslateMessage(&msg);
@@ -486,7 +512,7 @@ void SetTaskbar() {
 				mtaskbar_Revert = 0;
 
 				SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
-				SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
+				//SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
 			} //end primary taskbar
 
 			// This is a secondary taskbar
@@ -525,7 +551,7 @@ void SetTaskbar() {
 				int height_Shell_SecondaryTrayWnd = (rect_Shell_SecondaryTrayWnd.bottom - rect_Shell_SecondaryTrayWnd.top);
 
 				SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
-				SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
+				//SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
 
 				int left;
 				int top;
@@ -600,7 +626,7 @@ void SetTaskbar() {
 				height_Shell_SecondaryTrayWnd = NULL;
 
 				SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
-				SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
+				//SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
 			} //end secondary taskbar
 		}
 	}
@@ -620,16 +646,16 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 		std::wcout << "Main taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
-		SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
-		SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
+		//SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
+		//SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
 	}
 
 	if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
 		std::wcout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
-		SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
-		SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
+		//SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
+		//SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
 	}
 
 	hWND = NULL;
@@ -665,6 +691,41 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
 	wl = NULL;
 	Cloaked = NULL;
 	cl = NULL;
+
+	return true;
+}
+
+BOOL CALLBACK EnumCallbackInstances(HWND hWND, LPARAM lParam) {
+	int length = 256;
+	wchar_t* title = new wchar_t[length];
+
+	GetClassName(hWND, title, length);
+
+	if (wcscmp(title, L"TaskbarXI") == 0) {
+		DWORD PID;
+		GetWindowThreadProcessId(hWND, &PID);
+
+		DWORD MYPID;
+		MYPID = GetCurrentProcessId();
+
+		if (MYPID != PID) {
+			std::wcout << "Another TaskbarXI instance has been detected! Terminating other instance..." << std::endl;
+			HANDLE HTARGET = OpenProcess(PROCESS_ALL_ACCESS, false, PID);
+
+			NOTIFYICONDATA inid = {};
+			inid.cbSize = sizeof(inid);
+			inid.hWnd = hWND;
+			inid.uID = 1;
+
+			Shell_NotifyIcon(NIM_DELETE, &inid);
+
+			TerminateProcess(HTARGET, 0);
+		}
+	}
+
+	hWND = NULL;
+	title = NULL;
+	length = NULL;
 
 	return true;
 }
