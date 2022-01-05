@@ -70,9 +70,9 @@ BEGIN
             VALUE "CompanyName", "Chris Andriessen"
             VALUE "FileDescription", "TaskbarXI"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "Taskbar11.exe"
+            VALUE "InternalName", "TaskbarXI.exe"
             VALUE "LegalCopyright", "Copyright (C) Chris Andriessen 2022"
-            VALUE "OriginalFilename", "Taskbar11.exe"
+            VALUE "OriginalFilename", "TaskbarXI.exe"
             VALUE "ProductName", "TaskbarXI"
             VALUE "ProductVersion", "1.0.0.0"
         END
