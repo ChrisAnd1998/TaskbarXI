@@ -57,7 +57,7 @@ VOID SetTaskbar();
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-switch (uMsg)
+	switch (uMsg)
 	{
 	case APPWM_ICONNOTIFY:
 	{
@@ -83,8 +83,8 @@ switch (uMsg)
 				}
 
 				exit(0);
-
-			} else {
+			}
+			else {
 				//continue
 			}
 			break;
@@ -209,7 +209,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::atexit(exiting);
 
-	for (;;){ //while (GetMessage(&msg, NULL, 0, 0)) {
+	for (;;) { //while (GetMessage(&msg, NULL, 0, 0)) {
+		//GetMessage() blocks until there is a message available to retrieve. If you don't want to wait, then use PeekMessage() instead.
 		PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 		//TranslateMessage(&msg);
 		//DispatchMessage(&msg);
@@ -286,11 +287,9 @@ void SetTaskbar() {
 
 	for (HWND tb : taskbar_List) {
 		if (tb != 0) {
-
 			//SendMessage(tb, WM_ERASEBKGND, TRUE, NULL);
 			//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 			//SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
-
 
 			int taskbariscenter;
 
