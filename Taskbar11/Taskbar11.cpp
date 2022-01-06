@@ -70,7 +70,7 @@ int removestartup;
 // MessageBox(NULL, L"Tray icon double clicked!", L"clicked", MB_OK);
 
 void exiting() {
-	std::cout << "Exiting TaskbarXI..." << std::endl;
+	std::wcout << "Exiting TaskbarXI..." << std::endl;
 
 	Shell_NotifyIcon(NIM_DELETE, &nid);
 
@@ -190,7 +190,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (wcscmp(szArgList[i], L"-console") == 0) {
 			AllocConsole();
 			FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
-			freopen_s(&fpstdin, "CONIN$", "r", stdin);
+			//freopen_s(&fpstdin, "CONIN$", "r", stdin);
 			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
 			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
 		}
@@ -208,18 +208,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 
-	std::cout << "Initializing..." << std::endl;
+	std::wcout << "Initializing..." << std::endl;
 
 	HWND Explorer = NULL;
 
 	do
 	{
-		std::cout << "Looking for Explorer..." << std::endl;
+		std::wcout << "Looking for Explorer..." << std::endl;
 		Explorer = FindWindow(L"Shell_TrayWnd", 0);
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	} while (Explorer == 0);
 
-	std::cout << "Explorer found!" << std::endl;
+	std::wcout << "Explorer found!" << std::endl;
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -256,7 +256,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	Explorer = NULL;
 
-	std::cout << "Looking for taskbars..." << std::endl;
+	std::wcout << "Looking for taskbars..." << std::endl;
 
 	// Find all taskbar(s)
 	taskbar_Count = 0;
@@ -301,8 +301,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		remove_startup();
 	}
 
-	std::cout << "Initialize complete!" << std::endl;
-	std::cout << "Application is running!" << std::endl;
+	std::wcout << "Initialize complete!" << std::endl;
+	std::wcout << "Application is running!" << std::endl;
 
 	SetTaskbar();
 
@@ -319,7 +319,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 
 void SetTaskbar() {
-	std::cout.clear();
+	std::wcout.clear();
 
 	working = 1;
 
@@ -328,21 +328,21 @@ void SetTaskbar() {
 	GetWindowRgn(curreg_Check_handle, curreg_Check_region);
 
 	if (curreg_Check_region == 0) {
-		std::cout << "HRGN invalid!" << std::endl;
+		std::wcout << "HRGN invalid!" << std::endl;
 
 		HWND Explorer = NULL;
 
 		do
 		{
-			std::cout << "Looking for Explorer..." << std::endl;
+			std::wcout << "Looking for Explorer..." << std::endl;
 			Explorer = FindWindow(L"Shell_TrayWnd", 0);
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		} while (Explorer == 0);
 
 		Explorer = NULL;
 
-		std::cout << "Explorer found!" << std::endl;
-		std::cout << "Resetting..." << std::endl;
+		std::wcout << "Explorer found!" << std::endl;
+		std::wcout << "Resetting..." << std::endl;
 
 		taskbar_Count = 0;
 		taskbar_List[0] = 0;
@@ -367,7 +367,7 @@ void SetTaskbar() {
 		abort;
 	}
 
-	std::cout << "Clearing maximized window list..." << std::endl;
+	std::wcout << "Clearing maximized window list..." << std::endl;
 
 	maximized_Count = 0;
 	maximized_List[0] = 0;
@@ -431,25 +431,25 @@ void SetTaskbar() {
 			wchar_t* title = new wchar_t[length];
 			GetClassName(tb, title, length);
 
-			//std::cout << "Looping for " << title << " @ " << tb << std::endl;
+			//std::wcout << "Looping for " << title << " @ " << tb << std::endl;
 
 			// Check if hWid is still valid if not find again
 			if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
-				std::cout << "hWID invalid!" << std::endl;
+				std::wcout << "hWID invalid!" << std::endl;
 
 				HWND Explorer = NULL;
 
 				do
 				{
-					std::cout << "Looking for Explorer..." << std::endl;
+					std::wcout << "Looking for Explorer..." << std::endl;
 					Explorer = FindWindow(L"Shell_TrayWnd", 0);
 					std::this_thread::sleep_for(std::chrono::milliseconds(250));
 				} while (Explorer == 0);
 
 				Explorer = NULL;
 
-				std::cout << "Explorer found!" << std::endl;
-				std::cout << "Resetting..." << std::endl;
+				std::wcout << "Explorer found!" << std::endl;
+				std::wcout << "Resetting..." << std::endl;
 
 				taskbar_Count = 0;
 				taskbar_List[0] = 0;
@@ -563,7 +563,7 @@ void SetTaskbar() {
 						HMONITOR tbm1 = MonitorFromWindow(Shell_TrayWnd, MONITOR_DEFAULTTONEAREST);
 						HMONITOR wm1 = MonitorFromWindow(mx1, MONITOR_DEFAULTTONEAREST);
 						if (tbm1 == wm1) {
-							std::cout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
+							std::wcout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
 							HRGN region_Empty = CreateRectRgn(abs(rect_Shell_TrayWnd.left - rect_Shell_TrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left) * curDPI / 100, rect_Shell_TrayWnd.bottom * curDPI / 100);
 							SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
 							mtaskbar_Revert = 1;
@@ -584,7 +584,7 @@ void SetTaskbar() {
 					RECT newtbrect;
 					GetRgnBox(region_ShellTrayWnd, &newtbrect);
 
-					// std::cout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
+					// std::wcout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
 
 					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
 						//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
@@ -600,7 +600,7 @@ void SetTaskbar() {
 							//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 						}
 						else {
-							std::cout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
+							std::wcout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
 						}
 					}
 
@@ -610,7 +610,7 @@ void SetTaskbar() {
 				// HRGN region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
 				// HRGN region_TrayNotifyWnd = CreateRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left + 2) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom);
 
-				std::cout << "Done with " << title << " @ " << Shell_TrayWnd << std::endl;
+				std::wcout << "Done with " << title << " @ " << Shell_TrayWnd << std::endl;
 
 				// dispose
 				//currenttbreg = NULL;
@@ -714,7 +714,7 @@ void SetTaskbar() {
 						HMONITOR tbm2 = MonitorFromWindow(Shell_SecondaryTrayWnd, MONITOR_DEFAULTTONEAREST);
 						HMONITOR wm2 = MonitorFromWindow(mx2, MONITOR_DEFAULTTONEAREST);
 						if (tbm2 == wm2) {
-							std::cout << title << " @ " << Shell_SecondaryTrayWnd << " has a maximized window!" << std::endl;
+							std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " has a maximized window!" << std::endl;
 							HRGN region_Empty = CreateRectRgn(abs(rect_Shell_SecondaryTrayWnd.left - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_SecondaryTrayWnd.right - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, rect_Shell_SecondaryTrayWnd.bottom * curDPI / 100);
 							SetWindowRgn(Shell_SecondaryTrayWnd, region_Empty, TRUE);
 							staskbar_Revert = 1;
@@ -729,14 +729,14 @@ void SetTaskbar() {
 					RECT newtbrect;
 					GetRgnBox(region_Shell_SecondaryTrayWnd, &newtbrect);
 
-					//std::cout << newtbrect.left << std::endl;
-					//std::cout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
+					//std::wcout << newtbrect.left << std::endl;
+					//std::wcout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
 
 					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
 						SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
 					}
 					else {
-						std::cout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
+						std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
 					}
 
 					region_Shell_SecondaryTrayWnd = NULL;
@@ -744,7 +744,7 @@ void SetTaskbar() {
 
 				staskbar_Revert = 0;
 
-				std::cout << "Done with " << title << " @ " << Shell_SecondaryTrayWnd << std::endl;
+				std::wcout << "Done with " << title << " @ " << Shell_SecondaryTrayWnd << std::endl;
 
 				// dispose
 				left = NULL;
@@ -766,7 +766,7 @@ void SetTaskbar() {
 		}
 	}
 
-	//std::cout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
+	//std::wcout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	working = 0;
 }
@@ -779,7 +779,7 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 
 	if (wcscmp(title, L"Shell_TrayWnd") == 0) {
 		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
-		std::cout << "Main taskbar found! @ hWid : " << hWND << std::endl;
+		std::wcout << "Main taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
 		//SendMessage(hWND, WM_SETREDRAW, FALSE, NULL);
@@ -791,7 +791,7 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 
 	if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
 		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
-		std::cout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
+		std::wcout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
 		//SendMessage(hWND, WM_SETREDRAW, FALSE, NULL);
@@ -822,7 +822,7 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
 				if (wl and WS_VISIBLE == WS_VISIBLE) {
 					if ((wl | WS_MAXIMIZE) == wl) {
 						if ((wl | WS_VISIBLE) == wl) {
-							//std::cout << hWND << wl << std::endl;
+							//std::wcout << hWND << wl << std::endl;
 							maximized_List[maximized_Count] = hWND;
 							maximized_Count += 1;
 						}
@@ -854,7 +854,7 @@ BOOL CALLBACK EnumCallbackInstances(HWND hWND, LPARAM lParam) {
 		MYPID = GetCurrentProcessId();
 
 		if (MYPID != PID) {
-			std::cout << "Another TaskbarXI instance has been detected! Terminating other instance..." << std::endl;
+			std::wcout << "Another TaskbarXI instance has been detected! Terminating other instance..." << std::endl;
 			HANDLE HTARGET = OpenProcess(PROCESS_ALL_ACCESS, false, PID);
 
 			NOTIFYICONDATA inid = {};
