@@ -193,6 +193,49 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
 			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
 		}
+		if (wcscmp(szArgList[i], L"-help") == 0) {
+			AllocConsole();
+			FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
+			//freopen_s(&fpstdin, "CONIN$", "r", stdin);
+			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+			
+                             
+			    std::wcout << "                                                  " << std::endl;
+				std::wcout << "    bTTTTTTTTTTTTTTTTTTTTTTTTTTTbb     bTTTTTb    " << std::endl;
+				std::wcout << "    bTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTb   bTTTTTb    " << std::endl;
+				std::wcout << "    bbTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTb  bTTTTTb    " << std::endl;
+				std::wcout << "             bbbbbbbb         bTTTTTb  bTTTTTb    " << std::endl;
+				std::wcout << "              bbbbbbb     bbbbTTTTTTb  bTTTTTb    " << std::endl;
+				std::wcout << "               bTTTTTT   bTTTTTTTTTb   bTTTTTb    " << std::endl;
+				std::wcout << "           bbbb bTTTTTT  bTTTTTTTTTb   bTTTTTb    " << std::endl;
+				std::wcout << "         bbTTTTb bTTTTTT  bbbbbTTTTTb  bTTTTTb    " << std::endl;
+				std::wcout << "        bTTTTTTb  bTTTTTT      bTTTTbb bTTTTTb    " << std::endl;
+				std::wcout << "      bTTTTTTTb    bTTTTTTbbbbbTTTTTT  bTTTTTb    " << std::endl;
+				std::wcout << "    bTTTTTTTb       bTTTTTTTTTTTTTTTb  bTTTTTb    " << std::endl;
+				std::wcout << "     TTTTTb          bTTTTTTTTTTTTb    bTTTTTb    " << std::endl;
+				std::wcout << "      bbb             bbbbbbbbbbb      bbbbbb     " << std::endl;
+				std::wcout << "                                                  " << std::endl;
+                            
+			std::wcout << "An application written in C++ to modify the Windows 11 Taskbar. By Chris Andriessen." << std::endl;
+			std::wcout << "https://github.com/ChrisAnd1998/TaskbarXI" << std::endl;
+			std::wcout << "" << std::endl;
+			std::wcout << "PARAMETERS:" << std::endl;
+			std::wcout << "-help				(Shows this window)" << std::endl;
+			std::wcout << "-stop				(Stops TaskbarXI and reverts the taskbar to default)" << std::endl;
+			std::wcout << "-square				(Uses square corners instead of rounded corners)" << std::endl;
+			std::wcout << "-ignoremax			(Does not revert the taskbar on maximized window)" << std::endl;
+			std::wcout << "-notray				(Disables system tray icon)" << std::endl;
+			std::wcout << "-hidetraywnd			(Hides the system tray area)" << std::endl;
+			std::wcout << "-createstartup			(Creates a startup entry including the current parameters)" << std::endl;
+			std::wcout << "-removestartup			(Removes startup entry and exits TaskbarXI)" << std::endl;
+			std::wcout << "-console			(Displays a console window)" << std::endl;
+			std::wcout << "-sticky				(Sticks the system tray to the taskbar icons) <--- BUGGY" << std::endl;
+			std::wcout << "" << std::endl;
+			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -square";
+
+			FreeConsole();
+		}
 	}
 
 	LocalFree(szArgList);
