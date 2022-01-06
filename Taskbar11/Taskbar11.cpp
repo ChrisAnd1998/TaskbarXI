@@ -161,7 +161,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		if (wcscmp(szArgList[i], L"-stop") == 0) {
 			stop = 1;
-			cur_cmd.append(" -stop");
+			//cur_cmd.append(" -stop");
 		}
 		if (wcscmp(szArgList[i], L"-square") == 0) {
 			square = 1;
@@ -181,11 +181,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		if (wcscmp(szArgList[i], L"-createstartup") == 0) {
 			createstartup = 1;
-			cur_cmd.append(" -createstartup");
+			//cur_cmd.append(" -createstartup");
 		}
 		if (wcscmp(szArgList[i], L"-removestartup") == 0) {
 			removestartup = 1;
-			cur_cmd.append(" -removestartup");
+			//cur_cmd.append(" -removestartup");
 		}
 		if (wcscmp(szArgList[i], L"-console") == 0) {
 			AllocConsole();
