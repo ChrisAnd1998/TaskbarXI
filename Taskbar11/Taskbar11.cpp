@@ -9,14 +9,9 @@
 //#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
-#include <Windows.h>
-#include <chrono>
 #include <thread>
 #include <dwmapi.h>
-#include <iostream>
-#include <stdio.h>
-#include <Oleacc.h>
-#include <string>
+
 
 //Notifyicon
 #include <shellapi.h>
