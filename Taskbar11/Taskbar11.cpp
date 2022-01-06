@@ -6,6 +6,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define NOT_BUILD_WINDOWS_DEPRECATE
+//#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <Windows.h>
@@ -15,6 +16,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <Oleacc.h>
+#include <string>
 
 //Notifyicon
 #include <shellapi.h>
@@ -24,6 +26,7 @@
 NOTIFYICONDATA nid = {};
 
 std::string cur_dir;
+std::string cur_cmd;
 
 int working;
 
@@ -41,6 +44,8 @@ int staskbar_Revert;
 
 int trayleft;
 
+int isstore;
+
 void initTray(HWND parent);
 VOID SetTaskbar();
 
@@ -49,6 +54,9 @@ int square;
 int ignoremax;
 int notray;
 int hidetraywnd;
+int stop;
+int createstartup;
+int removestartup;
 
 //VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 //{
@@ -61,48 +69,8 @@ int hidetraywnd;
 
 // MessageBox(NULL, L"Tray icon double clicked!", L"clicked", MB_OK);
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case APPWM_ICONNOTIFY:
-	{
-		switch (lParam)
-		{
-		case WM_LBUTTONUP:
-			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
-			{
-				std::wcout << "Exiting TaskbarXI..." << std::endl;
-
-				Shell_NotifyIcon(NIM_DELETE, &nid);
-
-				for (HWND tb : taskbar_List) {
-					if (tb != 0) {
-						RECT rect_tb;
-						GetWindowRect(tb, &rect_tb);
-
-						INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
-
-						HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
-						SetWindowRgn(tb, region_Empty, TRUE);
-					}
-				}
-
-				exit(0);
-			}
-			else {
-				//continue
-			}
-			break;
-		}
-	}
-	}
-
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
 void exiting() {
-	std::wcout << "Exiting TaskbarXI..." << std::endl;
+	std::cout << "Exiting TaskbarXI..." << std::endl;
 
 	Shell_NotifyIcon(NIM_DELETE, &nid);
 
@@ -121,32 +89,139 @@ void exiting() {
 	exit(0);
 }
 
+LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case APPWM_ICONNOTIFY:
+	{
+		switch (lParam)
+		{
+		case WM_LBUTTONUP:
+			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
+			{
+				exiting();
+			}
+			else {
+				//continue
+			}
+			break;
+		}
+	}
+	}
+
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void create_startup() {
+	if (isstore == 0) {
+		std::wstring chars = L"";
+		chars += (wchar_t)34;
+		std::string quote(chars.begin(), chars.end());
+
+		std::string path = quote;
+		path.append(cur_dir);
+		path.append(quote);
+		path.append(cur_cmd);
+		HKEY hkey = NULL;
+		LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+		LONG status = RegSetValueExA(hkey, "TaskbarXI", 0, REG_SZ, (LPBYTE)path.c_str(), (path.size() + 1) * sizeof(wchar_t));
+		RegCloseKey(hkey);
+	}
+	if (isstore == 1) {
+		std::string storepath = "Explorer.exe taskbarxi:";
+		std::string path = storepath.append(cur_cmd);
+		HKEY hkey = NULL;
+		LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+		LONG status = RegSetValueExA(hkey, "TaskbarXI", 0, REG_SZ, (LPBYTE)path.c_str(), (path.size() + 1) * sizeof(wchar_t));
+		RegCloseKey(hkey);
+	}
+}
+
+void remove_startup() {
+	HKEY hkey = NULL;
+	LONG createStatus = RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+	LONG status = RegDeleteValue(hkey, L"TaskbarXI");
+	RegCloseKey(hkey);
+	exit(0);
+}
+
 //int main(int argc, char* argv[])
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	FreeConsole();
+
+	// look for commandline
+	LPWSTR* szArgList;
+	int argCount;
+
+	szArgList = CommandLineToArgvW(GetCommandLine(), &argCount);
+
+	for (int i = 0; i < argCount; i++)
+	{
+		if (wcscmp(szArgList[i], L"-stop") == 0) {
+			stop = 1;
+			cur_cmd.append(" -stop");
+		}
+		if (wcscmp(szArgList[i], L"-square") == 0) {
+			square = 1;
+			cur_cmd.append(" -square");
+		}
+		if (wcscmp(szArgList[i], L"-ignoremax") == 0) {
+			ignoremax = 1;
+			cur_cmd.append(" -ignoremax");
+		}
+		if (wcscmp(szArgList[i], L"-notray") == 0) {
+			notray = 1;
+			cur_cmd.append(" -notray");
+		}
+		if (wcscmp(szArgList[i], L"-hidetraywnd") == 0) {
+			hidetraywnd = 1;
+			cur_cmd.append(" -hidetraywnd");
+		}
+		if (wcscmp(szArgList[i], L"-createstartup") == 0) {
+			createstartup = 1;
+			cur_cmd.append(" -createstartup");
+		}
+		if (wcscmp(szArgList[i], L"-removestartup") == 0) {
+			removestartup = 1;
+			cur_cmd.append(" -removestartup");
+		}
+		if (wcscmp(szArgList[i], L"-console") == 0) {
+			AllocConsole();
+			FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
+			freopen_s(&fpstdin, "CONIN$", "r", stdin);
+			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+		}
+	}
+
+	LocalFree(szArgList);
+
 	EnumWindows(EnumCallbackInstances, NULL);
 
 	working = 1;
 	//SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	//SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	//SetWinEventHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, NULL, WinEventProcDestroy, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	//SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 
 	SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 
-	std::wcout << "Initializing..." << std::endl;
+	std::cout << "Initializing..." << std::endl;
 
 	HWND Explorer = NULL;
 
 	do
 	{
-		std::wcout << "Looking for Explorer..." << std::endl;
+		std::cout << "Looking for Explorer..." << std::endl;
 		Explorer = FindWindow(L"Shell_TrayWnd", 0);
-		std::this_thread::sleep_for(std::chrono::milliseconds(250));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	} while (Explorer == 0);
 
-	std::wcout << "Explorer found!" << std::endl;
+	std::cout << "Explorer found!" << std::endl;
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 	//Setup Notifyicon
 	MSG msg;
@@ -181,10 +256,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	Explorer = NULL;
 
-	std::wcout << "Looking for taskbars..." << std::endl;
-
-	//::ShowWindow(::GetConsoleWindow(), SW_SHOW);
-	FreeConsole();
+	std::cout << "Looking for taskbars..." << std::endl;
 
 	// Find all taskbar(s)
 	taskbar_Count = 0;
@@ -201,46 +273,36 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	EnumWindows(EnumCallbackTaskbars, NULL);
 
-	// look for commandline
-	LPWSTR* szArgList;
-	int argCount;
-
-	szArgList = CommandLineToArgvW(GetCommandLine(), &argCount);
-
-	for (int i = 0; i < argCount; i++)
-	{
-		if (wcscmp(szArgList[i], L"-stop") == 0) {
-			exiting();
-		}
-		if (wcscmp(szArgList[i], L"-square") == 0) {
-			square = 1;
-		}
-		if (wcscmp(szArgList[i], L"-ignoremax") == 0) {
-			ignoremax = 1;
-		}
-		if (wcscmp(szArgList[i], L"-notray") == 0) {
-			notray = 1;
-		}
-		if (wcscmp(szArgList[i], L"-hidetraywnd") == 0) {
-			hidetraywnd = 1;
-		}
+	if (stop == 1) {
+		exiting();
 	}
-
-	LocalFree(szArgList);
-
-	if (notray == 0) {
-		// Finalize tray icon
-		Shell_NotifyIcon(NIM_ADD, &nid);
-	}
-
-	std::wcout << "Initialize complete!" << std::endl;
-	std::wcout << "Application is running!" << std::endl;
 
 	char buffer[MAX_PATH];
 	GetModuleFileNameA(NULL, buffer, MAX_PATH);
 	std::string::size_type pos = std::string(buffer).find_last_of("\\/");
 
 	cur_dir = std::string(buffer);// (argv[0]);
+
+	if (cur_dir.find("40210ChrisAndriessen") != std::string::npos) {
+		// Application is store version.
+		isstore = 1;
+	}
+
+	if (notray == 0) {
+		// Finalize tray icon
+		Shell_NotifyIcon(NIM_ADD, &nid);
+	}
+
+	if (createstartup == 1) {
+		create_startup();
+	}
+
+	if (removestartup == 1) {
+		remove_startup();
+	}
+
+	std::cout << "Initialize complete!" << std::endl;
+	std::cout << "Application is running!" << std::endl;
 
 	SetTaskbar();
 
@@ -266,21 +328,21 @@ void SetTaskbar() {
 	GetWindowRgn(curreg_Check_handle, curreg_Check_region);
 
 	if (curreg_Check_region == 0) {
-		std::wcout << "HRGN invalid!" << std::endl;
+		std::cout << "HRGN invalid!" << std::endl;
 
 		HWND Explorer = NULL;
 
 		do
 		{
-			std::wcout << "Looking for Explorer..." << std::endl;
+			std::cout << "Looking for Explorer..." << std::endl;
 			Explorer = FindWindow(L"Shell_TrayWnd", 0);
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		} while (Explorer == 0);
 
 		Explorer = NULL;
 
-		std::wcout << "Explorer found!" << std::endl;
-		std::wcout << "Resetting..." << std::endl;
+		std::cout << "Explorer found!" << std::endl;
+		std::cout << "Resetting..." << std::endl;
 
 		taskbar_Count = 0;
 		taskbar_List[0] = 0;
@@ -305,27 +367,26 @@ void SetTaskbar() {
 		abort;
 	}
 
-	if (ignoremax == 0) {
-		std::wcout << "Clearing maximized window list..." << std::endl;
+	std::cout << "Clearing maximized window list..." << std::endl;
 
-		maximized_Count = 0;
-		maximized_List[0] = 0;
-		maximized_List[1] = 0;
-		maximized_List[2] = 0;
-		maximized_List[3] = 0;
-		maximized_List[4] = 0;
-		maximized_List[5] = 0;
-		maximized_List[6] = 0;
-		maximized_List[7] = 0;
-		maximized_List[8] = 0;
-		maximized_List[9] = 0;
-		maximized_List[10] = 0;
+	maximized_Count = 0;
+	maximized_List[0] = 0;
+	maximized_List[1] = 0;
+	maximized_List[2] = 0;
+	maximized_List[3] = 0;
+	maximized_List[4] = 0;
+	maximized_List[5] = 0;
+	maximized_List[6] = 0;
+	maximized_List[7] = 0;
+	maximized_List[8] = 0;
+	maximized_List[9] = 0;
+	maximized_List[10] = 0;
 
-		EnumWindows(EnumCallbackMaximized, NULL);
-	}
+	EnumWindows(EnumCallbackMaximized, NULL);
 
 	for (HWND tb : taskbar_List) {
 		if (tb != 0) {
+			//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 			//SendMessage(tb, WM_ERASEBKGND, TRUE, NULL);
 			//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 			//SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
@@ -370,25 +431,25 @@ void SetTaskbar() {
 			wchar_t* title = new wchar_t[length];
 			GetClassName(tb, title, length);
 
-			//std::wcout << "Looping for " << title << " @ " << tb << std::endl;
+			//std::cout << "Looping for " << title << " @ " << tb << std::endl;
 
 			// Check if hWid is still valid if not find again
 			if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
-				std::wcout << "hWID invalid!" << std::endl;
+				std::cout << "hWID invalid!" << std::endl;
 
 				HWND Explorer = NULL;
 
 				do
 				{
-					std::wcout << "Looking for Explorer..." << std::endl;
+					std::cout << "Looking for Explorer..." << std::endl;
 					Explorer = FindWindow(L"Shell_TrayWnd", 0);
 					std::this_thread::sleep_for(std::chrono::milliseconds(250));
 				} while (Explorer == 0);
 
 				Explorer = NULL;
 
-				std::wcout << "Explorer found!" << std::endl;
-				std::wcout << "Resetting..." << std::endl;
+				std::cout << "Explorer found!" << std::endl;
+				std::cout << "Resetting..." << std::endl;
 
 				taskbar_Count = 0;
 				taskbar_List[0] = 0;
@@ -496,12 +557,13 @@ void SetTaskbar() {
 				}
 
 				mtaskbar_Revert = 0;
+
 				for (HWND mx1 : maximized_List) {
 					if (mx1 != 0) {
 						HMONITOR tbm1 = MonitorFromWindow(Shell_TrayWnd, MONITOR_DEFAULTTONEAREST);
 						HMONITOR wm1 = MonitorFromWindow(mx1, MONITOR_DEFAULTTONEAREST);
 						if (tbm1 == wm1) {
-							std::wcout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
+							std::cout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
 							HRGN region_Empty = CreateRectRgn(abs(rect_Shell_TrayWnd.left - rect_Shell_TrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left) * curDPI / 100, rect_Shell_TrayWnd.bottom * curDPI / 100);
 							SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
 							mtaskbar_Revert = 1;
@@ -522,10 +584,14 @@ void SetTaskbar() {
 					RECT newtbrect;
 					GetRgnBox(region_ShellTrayWnd, &newtbrect);
 
-					// std::wcout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
+					// std::cout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
 
 					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
+						//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
+						//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
 						SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
+						//SendMessage(tb, WM_SETTINGCHANGE, FALSE, 0);
+						//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 					}
 					else {
 						if (rect_TrayNotifyWnd.left != trayleft) {
@@ -534,7 +600,7 @@ void SetTaskbar() {
 							//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 						}
 						else {
-							std::wcout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
+							std::cout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
 						}
 					}
 
@@ -544,7 +610,7 @@ void SetTaskbar() {
 				// HRGN region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
 				// HRGN region_TrayNotifyWnd = CreateRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left + 2) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom);
 
-				std::wcout << "Done with " << title << " @ " << Shell_TrayWnd << std::endl;
+				std::cout << "Done with " << title << " @ " << Shell_TrayWnd << std::endl;
 
 				// dispose
 				//currenttbreg = NULL;
@@ -564,6 +630,12 @@ void SetTaskbar() {
 				region_TrayNotifyWnd = NULL;
 
 				mtaskbar_Revert = 0;
+
+				//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
+				//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
+				//SendMessage(tb, WM_ERASEBKGND, TRUE, NULL);
+				//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
+				//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 
 				//SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
 				//SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
@@ -636,12 +708,13 @@ void SetTaskbar() {
 				}
 
 				staskbar_Revert = 0;
+
 				for (HWND mx2 : maximized_List) {
 					if (mx2 != 0) {
 						HMONITOR tbm2 = MonitorFromWindow(Shell_SecondaryTrayWnd, MONITOR_DEFAULTTONEAREST);
 						HMONITOR wm2 = MonitorFromWindow(mx2, MONITOR_DEFAULTTONEAREST);
 						if (tbm2 == wm2) {
-							std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " has a maximized window!" << std::endl;
+							std::cout << title << " @ " << Shell_SecondaryTrayWnd << " has a maximized window!" << std::endl;
 							HRGN region_Empty = CreateRectRgn(abs(rect_Shell_SecondaryTrayWnd.left - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_SecondaryTrayWnd.right - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, rect_Shell_SecondaryTrayWnd.bottom * curDPI / 100);
 							SetWindowRgn(Shell_SecondaryTrayWnd, region_Empty, TRUE);
 							staskbar_Revert = 1;
@@ -656,14 +729,14 @@ void SetTaskbar() {
 					RECT newtbrect;
 					GetRgnBox(region_Shell_SecondaryTrayWnd, &newtbrect);
 
-					//std::wcout << newtbrect.left << std::endl;
-					//std::wcout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
+					//std::cout << newtbrect.left << std::endl;
+					//std::cout << abs(currenttbrect.left) * curDPI / 100 << std::endl;
 
 					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
 						SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
 					}
 					else {
-						std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
+						std::cout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
 					}
 
 					region_Shell_SecondaryTrayWnd = NULL;
@@ -671,7 +744,7 @@ void SetTaskbar() {
 
 				staskbar_Revert = 0;
 
-				std::wcout << "Done with " << title << " @ " << Shell_SecondaryTrayWnd << std::endl;
+				std::cout << "Done with " << title << " @ " << Shell_SecondaryTrayWnd << std::endl;
 
 				// dispose
 				left = NULL;
@@ -693,7 +766,7 @@ void SetTaskbar() {
 		}
 	}
 
-	//std::wcout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
+	//std::cout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	working = 0;
 }
@@ -705,19 +778,27 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 	GetClassName(hWND, title, length);
 
 	if (wcscmp(title, L"Shell_TrayWnd") == 0) {
-		std::wcout << "Main taskbar found! @ hWid : " << hWND << std::endl;
+		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
+		std::cout << "Main taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
+		//SendMessage(hWND, WM_SETREDRAW, FALSE, NULL);
 		//SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
 		//SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
+		//SendMessage(hWND, WM_SETTINGCHANGE, TRUE, NULL);
+		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
 	}
 
 	if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
-		std::wcout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
+		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
+		std::cout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
+		//SendMessage(hWND, WM_SETREDRAW, FALSE, NULL);
 		//SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
 		//SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
+		//SendMessage(hWND, WM_SETTINGCHANGE, TRUE, NULL);
+		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
 	}
 
 	hWND = NULL;
@@ -735,14 +816,16 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
 	INT cl = DwmGetWindowAttribute(hWND, DWMWINDOWATTRIBUTE::DWMWA_CLOAKED, &Cloaked, sizeof(Cloaked));
 
 	// Look for non Phanthom maximized windows
-	if (wp.showCmd == 3) {
-		if (Cloaked == 0) {
-			if (wl and WS_VISIBLE == WS_VISIBLE) {
-				if ((wl | WS_MAXIMIZE) == wl) {
-					if ((wl | WS_VISIBLE) == wl) {
-						//std::wcout << hWND << wl << std::endl;
-						maximized_List[maximized_Count] = hWND;
-						maximized_Count += 1;
+	if (ignoremax == 0) {
+		if (wp.showCmd == 3) {
+			if (Cloaked == 0) {
+				if (wl and WS_VISIBLE == WS_VISIBLE) {
+					if ((wl | WS_MAXIMIZE) == wl) {
+						if ((wl | WS_VISIBLE) == wl) {
+							//std::cout << hWND << wl << std::endl;
+							maximized_List[maximized_Count] = hWND;
+							maximized_Count += 1;
+						}
 					}
 				}
 			}
@@ -771,7 +854,7 @@ BOOL CALLBACK EnumCallbackInstances(HWND hWND, LPARAM lParam) {
 		MYPID = GetCurrentProcessId();
 
 		if (MYPID != PID) {
-			std::wcout << "Another TaskbarXI instance has been detected! Terminating other instance..." << std::endl;
+			std::cout << "Another TaskbarXI instance has been detected! Terminating other instance..." << std::endl;
 			HANDLE HTARGET = OpenProcess(PROCESS_ALL_ACCESS, false, PID);
 
 			NOTIFYICONDATA inid = {};
