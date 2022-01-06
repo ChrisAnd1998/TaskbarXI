@@ -154,6 +154,7 @@
     <ResourceCompile Include="Taskbar11.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore"/>
     <Content Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

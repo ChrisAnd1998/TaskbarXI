@@ -88,13 +88,9 @@ void exiting() {
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
     if(boxopen == true) {
-    
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
-    
     }
-
 	switch (uMsg)
 	{
 	case APPWM_ICONNOTIFY:
@@ -102,7 +98,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (lParam)
 		{
 		case WM_LBUTTONUP:
-	
+		
 	         boxopen = true;
 
 			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
@@ -112,8 +108,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			else {
 				boxopen = false;
 			}
-		        }
+		  }
 			break;
+		
+		    // Didnt want to add this, but allocating both R and L Mouse Buttons would be less confusing for now no?
+		
 		}
 	}
 
