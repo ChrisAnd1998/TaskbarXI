@@ -12,7 +12,6 @@
 #include <thread>
 #include <dwmapi.h>
 
-
 //Notifyicon
 #include <shellapi.h>
 #include "resource.h"
@@ -52,6 +51,7 @@ int hidetraywnd;
 int stop;
 int createstartup;
 int removestartup;
+int sticky;
 
 //VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 //{
@@ -173,6 +173,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (wcscmp(szArgList[i], L"-hidetraywnd") == 0) {
 			hidetraywnd = 1;
 			cur_cmd.append(" -hidetraywnd");
+		}
+		if (wcscmp(szArgList[i], L"-sticky") == 0) {
+			sticky = 1;
+			cur_cmd.append(" -sticky");
 		}
 		if (wcscmp(szArgList[i], L"-createstartup") == 0) {
 			createstartup = 1;
@@ -355,7 +359,7 @@ void SetTaskbar() {
 		chars += (wchar_t)34;
 		std::string quote(chars.begin(), chars.end());
 
-		WinExec((quote + cur_dir + quote).c_str(), SW_HIDE);
+		WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		exit(0);
@@ -465,7 +469,7 @@ void SetTaskbar() {
 				chars += (wchar_t)34;
 				std::string quote(chars.begin(), chars.end());
 
-				WinExec((quote + cur_dir + quote).c_str(), SW_HIDE);
+				WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -477,10 +481,14 @@ void SetTaskbar() {
 			if (wcscmp(title, L"Shell_TrayWnd") == 0) {
 				HWND Shell_TrayWnd = tb;
 				HWND Start = FindWindowEx(Shell_TrayWnd, 0, L"Start", NULL);
-				//HWND DesktopWindowContentBridge = FindWindowEx(Shell_TrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
+				HWND DesktopWindowContentBridge = FindWindowEx(Shell_TrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
 				HWND RebarWindow32 = FindWindowEx(Shell_TrayWnd, 0, L"RebarWindow32", NULL);
 				HWND MSTaskSwWClass = FindWindowEx(RebarWindow32, 0, L"MSTaskSwWClass", NULL);
 				HWND TrayNotifyWnd = FindWindowEx(Shell_TrayWnd, 0, L"TrayNotifyWnd", NULL);
+
+				HWND SysPager = FindWindowEx(TrayNotifyWnd, 0, L"SysPager", NULL);
+				HWND ToolbarWindow32 = FindWindowEx(TrayNotifyWnd, 0, L"ToolbarWindow32", NULL);
+				HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
 
 				SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
 
@@ -499,15 +507,21 @@ void SetTaskbar() {
 				RECT rect_MSTaskSwWClass;
 				GetWindowRect(MSTaskSwWClass, &rect_MSTaskSwWClass);
 
-				//SetWindowPos(Start, NULL, rect_Start.top, 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
-
 				RECT rect_TrayNotifyWnd;
 				GetWindowRect(TrayNotifyWnd, &rect_TrayNotifyWnd);
+
+				RECT rect_ToolbarWindow32;
+				GetWindowRect(ToolbarWindow32, &rect_ToolbarWindow32);
+
+				RECT rect_SysPager;
+				GetWindowRect(SysPager, &rect_SysPager);
 
 				INT curDPI = GetDpiForWindow(Shell_TrayWnd) * 1.041666666666667;
 
 				int width_Shell_TrayWnd = (rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left);
 				int height_Shell_TrayWnd = (rect_Shell_TrayWnd.bottom - rect_Shell_TrayWnd.top);
+
+				//int width_SysPager = (rect_SysPager.right - rect_SysPager.left) / 2;
 
 				//int left = abs(rect_MSTaskSwWClass.right - width_Shell_TrayWnd - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
 				//SendMessage(Start, WM_SETREDRAW, TRUE, NULL);
@@ -526,7 +540,14 @@ void SetTaskbar() {
 				int bottom;
 
 				if (taskbariscenter == 1) {
-					left = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100;
+					if (sticky == 1) {
+						left = (abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100) - (((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2) * curDPI / 100);
+						//left = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100;
+					}
+					else {
+						left = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100;
+					}
+
 					top = 2 * curDPI / 100;
 					right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
 					bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
@@ -537,6 +558,25 @@ void SetTaskbar() {
 					top = 2 * curDPI / 100;
 					right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
 					bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+				}
+
+				if (sticky == 1) {
+					//ShowWindow(ToolbarWindow32, SW_HIDE);
+					//ShowWindow(SysPager, SW_HIDE);
+					//ShowWindow(Button, SW_HIDE);
+					//SendMessage(Button, WM_SETREDRAW, FALSE, 0);
+					//SendMessage(ToolbarWindow32, WM_SETREDRAW, FALSE, 0);
+					//SendMessage(SysPager, WM_SETREDRAW, FALSE, 0);
+
+					//ShowWindow(ToolbarWindow32, SW_HIDE);
+					//ShowWindow(SysPager, SW_HIDE);
+					//ShowWindow(Button, SW_HIDE);
+					//std::wcout << width_SysPager << std::endl;
+
+					//SendMessage(Button, WM_SETREDRAW, TRUE, 0);
+
+					SetWindowPos(DesktopWindowContentBridge, NULL, -(((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2)), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+					SetWindowPos(TrayNotifyWnd, NULL, rect_MSTaskSwWClass.right - ((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 				}
 
 				HRGN region_ShellTrayWnd;
