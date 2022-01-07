@@ -144,6 +144,8 @@ void exiting() {
 			HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
 			SetWindowRgn(tb, region_Empty, TRUE);
 
+		
+
 			HWND Shell_TrayWnd = FindWindow(L"Shell_TrayWnd", 0);
 			HWND TrayNotifyWnd = FindWindowEx(Shell_TrayWnd, 0, L"TrayNotifyWnd", NULL);
 
@@ -154,6 +156,10 @@ void exiting() {
 			ShowWindow(ToolbarWindow32, SW_SHOW);
 			ShowWindow(SysPager, SW_SHOW);
 			ShowWindow(Button, SW_SHOW);
+
+
+			SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
+			SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 		}
 	}
 
@@ -293,6 +299,11 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 
 	//std::wcout << currenttbrect.left * curDPI / 100 << "|" << newtbrect.left << std::endl;
 
+	if (abs((currenttbrect.left * curDPI / 100) - (newtbrect.left)) >= 100) {
+		SetWindowRgn(hWND, region, TRUE);
+		return;
+	}
+
 	if (currenttbrect.left * curDPI / 100 >= newtbrect.left) {
 		makebigger = 1;
 	}
@@ -310,7 +321,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	for (;;) {
 		//GetWindowRgn(hWND, currenttbreg);
 		//GetRgnBox(currenttbreg, &currenttbrect);
-		//std::wcout << left << "|" << newtbrect.left << std::endl;
+	    std::wcout << left << "|" << newtbrect.left << std::endl;
 
 		if (left == newtbrect.left) {
 			//End reached
