@@ -66,31 +66,13 @@ VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, H
 			wchar_t* title = new wchar_t[length];
 			GetClassName(hwnd, title, length);
 
-			//if (wcscmp(title, L"MSTaskListWClass") == 0) {
-			//	SetTaskbar();
-			//}
-
 			if (wcscmp(title, L"MSTask") == 0) {
 				SetTaskbar();
-				//std::this_thread::sleep_for(std::chrono::milliseconds(10));
-				//SetTaskbar();
 			}
 
 			if (wcscmp(title, L"Toolba") == 0) {
 				SetTaskbar();
-				//std::this_thread::sleep_for(std::chrono::milliseconds(10));
-				//SetTaskbar();
 			}
-
-			//if (wcscmp(title, L"MSTaskSwWClass") == 0) {
-			//	SetTaskbar();
-			//}
-
-			//if (wcscmp(title, L"ToolbarWindow32") == 0) {
-			//	SetTaskbar();
-			//}
-
-			//std::wcout << title << std::endl;
 
 			title = NULL;
 
@@ -145,6 +127,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 		case WM_LBUTTONUP:
 			boxopen = true;
+			SetTaskbar();
 			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
 			{
 				exiting();
@@ -155,6 +138,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		case WM_RBUTTONUP:
 			boxopen = true;
+			SetTaskbar();
 			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
 			{
 				exiting();
@@ -201,6 +185,40 @@ void remove_startup() {
 	LONG status = RegDeleteValue(hkey, L"TaskbarXI");
 	RegCloseKey(hkey);
 	exit(0);
+}
+
+HRESULT UpdateWindows11RoundCorners(HWND hWnd)
+{
+	typedef HRESULT(WINAPI* PFNSETWINDOWATTRIBUTE)(HWND hWnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+
+	enum DWMWINDOWATTRIBUTE
+	{
+		DWMWA_WINDOW_CORNER_PREFERENCE = 33
+	};
+
+	enum DWM_WINDOW_CORNER_PREFERENCE
+	{
+		DWMWCP_DEFAULT = 0,
+		DWMWCP_DONOTROUND = 1,
+		DWMWCP_ROUND = 2,
+		DWMWCP_ROUNDSMALL = 3
+	};
+
+	HMODULE hDwmApi = ::LoadLibrary(TEXT("dwmapi.dll"));
+	if (hDwmApi)
+	{
+		auto* pfnSetWindowAttribute = reinterpret_cast<PFNSETWINDOWATTRIBUTE>(
+			::GetProcAddress(hDwmApi, "DwmSetWindowAttribute"));
+		if (pfnSetWindowAttribute)
+		{
+			auto preference = static_cast<DWM_WINDOW_CORNER_PREFERENCE>(2);
+			return pfnSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE,
+				&preference, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
+		}
+		::FreeLibrary(hDwmApi);
+	}
+
+	return E_FAIL;
 }
 
 //int main(int argc, char* argv[])
@@ -473,8 +491,6 @@ void SetTaskbar() {
 			WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
 		}
 
-		
-
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		exit(0);
 		abort;
@@ -610,9 +626,6 @@ void SetTaskbar() {
 				HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
 
 				SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
-
-
-
 
 				//int hh = 0;
 				//SendMessage(tb, WM_GETDPISCALEDSIZE, hh, 0x78);
@@ -775,6 +788,8 @@ void SetTaskbar() {
 
 						SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 
+						//SetFrameRgn(Shell_TrayWnd, region_Both, TRUE);
+
 						//SendMessage(tb, WM_SETTINGCHANGE, FALSE, 0);
 						//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 					}
@@ -795,6 +810,14 @@ void SetTaskbar() {
 
 				// HRGN region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
 				// HRGN region_TrayNotifyWnd = CreateRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left + 2) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom);
+
+				//UpdateWindows11RoundCorners(Shell_TrayWnd);
+				//SetWindowPos(Shell_TrayWnd, NULL, 0 , 0, 500, 20, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+
+				//UpdateWindows11RoundCorners(Shell_TrayWnd);
+				//UpdateWindows11RoundCorners(RebarWindow32);
+				//UpdateWindows11RoundCorners(DesktopWindowContentBridge);
+				//UpdateWindows11RoundCorners(MSTaskSwWClass);
 
 				std::wcout << "Done with " << title << " @ " << Shell_TrayWnd << std::endl;
 
