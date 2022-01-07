@@ -159,7 +159,7 @@ void exiting() {
 
 
 			SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
-			SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
+			//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 		}
 	}
 
