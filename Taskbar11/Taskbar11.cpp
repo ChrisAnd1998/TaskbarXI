@@ -24,6 +24,8 @@ std::string cur_cmd;
 
 int working;
 
+int eventtrigger;
+
 BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam);
 BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam);
 BOOL CALLBACK EnumCallbackInstances(HWND hWND, LPARAM lParam);
@@ -55,16 +57,55 @@ int createstartup;
 int removestartup;
 int sticky;
 
-//VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
-//{
-//
-//    if (working == 0) {
-//       SetTaskbar();
-//    }
-//
-//}
 
-// MessageBox(NULL, L"Tray icon double clicked!", L"clicked", MB_OK);
+
+VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
+{
+	if (eventtrigger == 0) {
+		if (working == 0) {
+			eventtrigger = 1;
+			int length = 7;
+			wchar_t* title = new wchar_t[length];
+			GetClassName(hwnd, title, length);
+
+			//if (wcscmp(title, L"MSTaskListWClass") == 0) {
+			//	SetTaskbar();
+			//}
+
+			if (wcscmp(title, L"MSTask") == 0) {
+				SetTaskbar();
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				SetTaskbar();
+			}
+
+			if (wcscmp(title, L"Toolba") == 0) {
+				SetTaskbar();
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				SetTaskbar();
+			}
+
+			//if (wcscmp(title, L"MSTaskSwWClass") == 0) {
+			//	SetTaskbar();
+			//}
+
+			//if (wcscmp(title, L"ToolbarWindow32") == 0) {
+			//	SetTaskbar();
+			//}
+
+			std::wcout << title << std::endl;
+
+			title = NULL;
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+			
+
+			eventtrigger = 0;
+		}
+	}
+}
+
+
 
 void exiting() {
 	std::wcout << "Exiting TaskbarXI..." << std::endl;
@@ -80,6 +121,17 @@ void exiting() {
 
 			HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
 			SetWindowRgn(tb, region_Empty, TRUE);
+
+			HWND Shell_TrayWnd = FindWindow(L"Shell_TrayWnd", 0);
+			HWND TrayNotifyWnd = FindWindowEx(Shell_TrayWnd, 0, L"TrayNotifyWnd", NULL);
+
+			HWND SysPager = FindWindowEx(TrayNotifyWnd, 0, L"SysPager", NULL);
+			HWND ToolbarWindow32 = FindWindowEx(TrayNotifyWnd, 0, L"ToolbarWindow32", NULL);
+			HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
+
+			ShowWindow(ToolbarWindow32, SW_SHOW);
+			ShowWindow(SysPager, SW_SHOW);
+			ShowWindow(Button, SW_SHOW);
 		}
 	}
 
@@ -258,10 +310,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	EnumWindows(EnumCallbackInstances, NULL);
 
 	working = 1;
-	//SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
-	//SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
-	//SetWinEventHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, NULL, WinEventProcDestroy, 0, 0, WINEVENT_SKIPOWNPROCESS);
-	//SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	
 
 	SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 
@@ -308,6 +360,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	Shell_NotifyIcon(NIM_DELETE, &nid);
 
+	if (notray == 0) {
+		// Finalize tray icon
+		if (sticky == 0) {
+			Shell_NotifyIcon(NIM_ADD, &nid);
+		}
+	}
+
 	//ShowWindow(tray_hwnd, WM_SHOWWINDOW);
 	//End setup Notifyicon
 
@@ -343,11 +402,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (cur_dir.find("40210ChrisAndriessen") != std::string::npos) {
 		// Application is store version.
 		isstore = 1;
-	}
-
-	if (notray == 0) {
-		// Finalize tray icon
-		Shell_NotifyIcon(NIM_ADD, &nid);
+		cur_dir = "Explorer.exe taskbarxi:";
 	}
 
 	if (createstartup == 1) {
@@ -361,6 +416,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	std::wcout << "Initialize complete!" << std::endl;
 	std::wcout << "Application is running!" << std::endl;
 
+	SetTaskbar();
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	SetTaskbar();
 
 	std::atexit(exiting);
@@ -645,15 +702,24 @@ void SetTaskbar() {
 					//SendMessage(ToolbarWindow32, WM_SETREDRAW, FALSE, 0);
 					//SendMessage(SysPager, WM_SETREDRAW, FALSE, 0);
 
-					//ShowWindow(ToolbarWindow32, SW_HIDE);
-					//ShowWindow(SysPager, SW_HIDE);
-					//ShowWindow(Button, SW_HIDE);
+					// Cool feature but to have this running stable all the tray icons have to be disabled to prevent the system tray area from refreshing.
+
+					ShowWindow(ToolbarWindow32, SW_HIDE);
+					ShowWindow(SysPager, SW_HIDE);
+					ShowWindow(Button, SW_HIDE);
 					//std::wcout << width_SysPager << std::endl;
 
 					//SendMessage(Button, WM_SETREDRAW, TRUE, 0);
 
 					SetWindowPos(DesktopWindowContentBridge, NULL, -(((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2)), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 					SetWindowPos(TrayNotifyWnd, NULL, rect_MSTaskSwWClass.right - ((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+					
+					
+				}
+				else {
+					ShowWindow(ToolbarWindow32, SW_SHOW);
+					ShowWindow(SysPager, SW_SHOW);
+					ShowWindow(Button, SW_SHOW);
 				}
 
 				HRGN region_ShellTrayWnd;
@@ -697,18 +763,23 @@ void SetTaskbar() {
 					GetRgnBox(region_ShellTrayWnd, &newtbrect);
 
 					// std::wcout << rect_TrayNotifyWnd.left << " " << trayleft << std::endl;
-
+					//int justgotupdate;
 					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
 						//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
 						//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
+						
 						SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
+
+						
+
 						//SendMessage(tb, WM_SETTINGCHANGE, FALSE, 0);
 						//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 					}
 					else {
 						if (rect_TrayNotifyWnd.left != trayleft) {
 							SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
-							trayleft = rect_TrayNotifyWnd.left;
+							//trayleft = rect_TrayNotifyWnd.left;
+
 							//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 						}
 						else {
@@ -879,7 +950,7 @@ void SetTaskbar() {
 	}
 
 	//std::wcout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
-	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	working = 0;
 }
 
