@@ -395,7 +395,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (cur_dir.find("40210ChrisAndriessen") != std::string::npos) {
 		// Application is store version.
 		isstore = 1;
-		cur_dir = "Explorer.exe taskbarxi:";
 	}
 
 	if (createstartup == 1) {
@@ -467,7 +466,14 @@ void SetTaskbar() {
 		chars += (wchar_t)34;
 		std::string quote(chars.begin(), chars.end());
 
-		WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
+		if (isstore == 1) {
+			WinExec(("Explorer.exe taskbarxi:" + cur_cmd).c_str(), SW_HIDE);
+		}
+		else {
+			WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
+		}
+
+		
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		exit(0);
@@ -577,7 +583,12 @@ void SetTaskbar() {
 				chars += (wchar_t)34;
 				std::string quote(chars.begin(), chars.end());
 
-				WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
+				if (isstore == 1) {
+					WinExec(("Explorer.exe taskbarxi:" + cur_cmd).c_str(), SW_HIDE);
+				}
+				else {
+					WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
+				}
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -599,6 +610,9 @@ void SetTaskbar() {
 				HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
 
 				SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
+
+
+
 
 				//int hh = 0;
 				//SendMessage(tb, WM_GETDPISCALEDSIZE, hh, 0x78);
