@@ -57,8 +57,6 @@ int createstartup;
 int removestartup;
 int sticky;
 
-
-
 VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
 	if (eventtrigger == 0) {
@@ -98,14 +96,10 @@ VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, H
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-			
-
 			eventtrigger = 0;
 		}
 	}
 }
-
-
 
 void exiting() {
 	std::wcout << "Exiting TaskbarXI..." << std::endl;
@@ -313,7 +307,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
-	
 
 	SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 
@@ -713,8 +706,6 @@ void SetTaskbar() {
 
 					SetWindowPos(DesktopWindowContentBridge, NULL, -(((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2)), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 					SetWindowPos(TrayNotifyWnd, NULL, rect_MSTaskSwWClass.right - ((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
-					
-					
 				}
 				else {
 					ShowWindow(ToolbarWindow32, SW_SHOW);
@@ -767,10 +758,8 @@ void SetTaskbar() {
 					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100) {
 						//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
 						//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
-						
-						SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 
-						
+						SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 
 						//SendMessage(tb, WM_SETTINGCHANGE, FALSE, 0);
 						//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
