@@ -72,14 +72,14 @@ VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, H
 
 			if (wcscmp(title, L"MSTask") == 0) {
 				SetTaskbar();
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
-				SetTaskbar();
+				//std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				//SetTaskbar();
 			}
 
 			if (wcscmp(title, L"Toolba") == 0) {
 				SetTaskbar();
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
-				SetTaskbar();
+				//std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				//SetTaskbar();
 			}
 
 			//if (wcscmp(title, L"MSTaskSwWClass") == 0) {
@@ -90,7 +90,7 @@ VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, H
 			//	SetTaskbar();
 			//}
 
-			std::wcout << title << std::endl;
+			//std::wcout << title << std::endl;
 
 			title = NULL;
 
@@ -291,7 +291,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			std::wcout << "-createstartup			(Creates a startup entry including the current parameters)" << std::endl;
 			std::wcout << "-removestartup			(Removes startup entry and exits TaskbarXI)" << std::endl;
 			std::wcout << "-console			(Displays a console window)" << std::endl;
-			std::wcout << "-sticky				(Sticks the system tray to the taskbar icons) <--- BUGGY" << std::endl;
+			std::wcout << "-sticky				(Sticks the system tray to the taskbar (removes the tray icons to keep it stable))" << std::endl;
 			std::wcout << "" << std::endl;
 			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -square";
 
@@ -410,8 +410,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	std::wcout << "Application is running!" << std::endl;
 
 	SetTaskbar();
-	std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	SetTaskbar();
+	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	//SetTaskbar();
 
 	std::atexit(exiting);
 
