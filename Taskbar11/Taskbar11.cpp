@@ -57,6 +57,51 @@ int createstartup;
 int removestartup;
 int sticky;
 int smoothresize;
+int blur;
+
+const HINSTANCE hModule = LoadLibrary(TEXT("user32.dll"));
+
+struct ACCENTPOLICY
+{
+	int nAccentState;
+	int nFlags;
+	int nColor;
+	int nAnimationId;
+};
+struct WINCOMPATTRDATA
+{
+	int nAttribute;
+	PVOID pData;
+	ULONG ulDataSize;
+};
+
+typedef BOOL(WINAPI* pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
+const pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(hModule, "SetWindowCompositionAttribute");
+
+void SetWindowBlur()
+{
+	//https://github.com/TranslucentTB/TranslucentTB
+	if (hModule)
+	{
+		if (SetWindowCompositionAttribute)
+		{
+			for (;;) {
+				for (HWND tb : taskbar_List) {
+					if (tb != 0) {
+						ACCENTPOLICY policy = { 3, 0, 0, 0 }; // ACCENT_ENABLE_BLURBEHIND=3, ACCENT_INVALID=4...
+						WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
+						SetWindowCompositionAttribute(tb, &data);
+						
+					}
+				}
+				
+				std::this_thread::sleep_for(std::chrono::milliseconds(14));
+			}
+			
+		}
+
+	}
+}
 
 VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
@@ -381,6 +426,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			smoothresize = 1;
 			cur_cmd.append(" -smoothresize");
 		}
+		if (wcscmp(szArgList[i], L"-blur") == 0) {
+			blur = 1;
+			cur_cmd.append(" -blur");
+		}
 		if (wcscmp(szArgList[i], L"-createstartup") == 0) {
 			createstartup = 1;
 			//cur_cmd.append(" -createstartup");
@@ -434,6 +483,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			std::wcout << "-console			(Displays a console window)" << std::endl;
 			std::wcout << "-sticky				(Sticks the system tray to the taskbar (removes the tray icons to keep it stable))" << std::endl;
 			std::wcout << "-smoothresize				(Resizes the taskbar smoothly)" << std::endl;
+			std::wcout << "-blur				(Makes the taskbar blurred)" << std::endl;
 			std::wcout << "" << std::endl;
 			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -square";
 
@@ -547,6 +597,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if (removestartup == 1) {
 		remove_startup();
+	}
+
+	if (blur == 1) {
+		std::thread{SetWindowBlur}.detach();
 	}
 
 	std::wcout << "Initialize complete!" << std::endl;
