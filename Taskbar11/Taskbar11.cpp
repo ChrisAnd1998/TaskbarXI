@@ -88,9 +88,9 @@ void exiting() {
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    if(boxopen == true) {
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
-    }
+	if (boxopen == true) {
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	}
 	switch (uMsg)
 	{
 	case APPWM_ICONNOTIFY:
@@ -98,9 +98,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (lParam)
 		{
 		case WM_LBUTTONUP:
-		
-	         boxopen = true;
-
+			boxopen = true;
 			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
 			{
 				exiting();
@@ -108,12 +106,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			else {
 				boxopen = false;
 			}
-		  }
 			break;
-		
-		    // Didnt want to add this, but allocating both R and L Mouse Buttons would be less confusing for now no?
-		
+		case WM_RBUTTONUP:
+			boxopen = true;
+			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
+			{
+				exiting();
+			}
+			else {
+				boxopen = false;
+			}
+			break;
 		}
+	}
 	}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -210,24 +215,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			//freopen_s(&fpstdin, "CONIN$", "r", stdin);
 			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
 			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
-			
-                             
-			    std::wcout << "                                                  " << std::endl;
-				std::wcout << "    bTTTTTTTTTTTTTTTTTTTTTTTTTTTbb     bTTTTTb    " << std::endl;
-				std::wcout << "    bTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTb   bTTTTTb    " << std::endl;
-				std::wcout << "    bbTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTb  bTTTTTb    " << std::endl;
-				std::wcout << "             bbbbbbbb         bTTTTTb  bTTTTTb    " << std::endl;
-				std::wcout << "              bbbbbbb     bbbbTTTTTTb  bTTTTTb    " << std::endl;
-				std::wcout << "               bTTTTTT   bTTTTTTTTTb   bTTTTTb    " << std::endl;
-				std::wcout << "           bbbb bTTTTTT  bTTTTTTTTTb   bTTTTTb    " << std::endl;
-				std::wcout << "         bbTTTTb bTTTTTT  bbbbbTTTTTb  bTTTTTb    " << std::endl;
-				std::wcout << "        bTTTTTTb  bTTTTTT      bTTTTbb bTTTTTb    " << std::endl;
-				std::wcout << "      bTTTTTTTb    bTTTTTTbbbbbTTTTTT  bTTTTTb    " << std::endl;
-				std::wcout << "    bTTTTTTTb       bTTTTTTTTTTTTTTTb  bTTTTTb    " << std::endl;
-				std::wcout << "     TTTTTb          bTTTTTTTTTTTTb    bTTTTTb    " << std::endl;
-				std::wcout << "      bbb             bbbbbbbbbbb      bbbbbb     " << std::endl;
-				std::wcout << "                                                  " << std::endl;
-                            
+
+			std::wcout << "                                                  " << std::endl;
+			std::wcout << "    bTTTTTTTTTTTTTTTTTTTTTTTTTTTbb     bTTTTTb    " << std::endl;
+			std::wcout << "    bTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTb   bTTTTTb    " << std::endl;
+			std::wcout << "    bbTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTb  bTTTTTb    " << std::endl;
+			std::wcout << "             bbbbbbbb         bTTTTTb  bTTTTTb    " << std::endl;
+			std::wcout << "              bbbbbbb     bbbbTTTTTTb  bTTTTTb    " << std::endl;
+			std::wcout << "               bTTTTTT   bTTTTTTTTTb   bTTTTTb    " << std::endl;
+			std::wcout << "           bbbb bTTTTTT  bTTTTTTTTTb   bTTTTTb    " << std::endl;
+			std::wcout << "         bbTTTTb bTTTTTT  bbbbbTTTTTb  bTTTTTb    " << std::endl;
+			std::wcout << "        bTTTTTTb  bTTTTTT      bTTTTbb bTTTTTb    " << std::endl;
+			std::wcout << "      bTTTTTTTb    bTTTTTTbbbbbTTTTTT  bTTTTTb    " << std::endl;
+			std::wcout << "    bTTTTTTTb       bTTTTTTTTTTTTTTTb  bTTTTTb    " << std::endl;
+			std::wcout << "     TTTTTb          bTTTTTTTTTTTTb    bTTTTTb    " << std::endl;
+			std::wcout << "      bbb             bbbbbbbbbbb      bbbbbb     " << std::endl;
+			std::wcout << "                                                  " << std::endl;
+
 			std::wcout << "An application written in C++ to modify the Windows 11 Taskbar. By Chris Andriessen." << std::endl;
 			std::wcout << "https://github.com/ChrisAnd1998/TaskbarXI" << std::endl;
 			std::wcout << "" << std::endl;
@@ -545,6 +549,25 @@ void SetTaskbar() {
 				HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
 
 				SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
+
+				//int hh = 0;
+				//SendMessage(tb, WM_GETDPISCALEDSIZE, hh, 0x78);
+				//std::wcout << hh << std::endl;
+
+				//SendMessage(tb, WM_ERASEBKGND, TRUE, 0);
+				//SendMessage(tb, WM_DPICHANGED, 0, 0);
+				//SendMessage(tb, WM_DESTROY, TRUE, 0);
+				//SendMessage(tb, WM_DPICHANGED, 0x0000000000900090, 0x000000DD351BE7E0);
+				//SendMessage(tb, WM_DPICHANGED_AFTERPARENT, 0x0000000000900090, 0x000000DD351BE7E0);
+
+				//SendMessage(tb, WM_DISPLAYCHANGE, 0x00000020, 0x08700F00);
+				//SendMessage(tb, WM_DPICHANGED, 0x00780078, 0x00331EC00);
+				//SetWindowPos(tb, NULL, 0, 0, 3840, 100, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_FRAMECHANGED | 1800);
+				//SendMessage(tb, WM_SIZE, 0, 0x480F00);
+				//SendMessage(tb, WM_DPICHANGED_AFTERPARENT, 0x00780078, 0x00331EC00);
+				//SendMessage(tb, WM_DPICHANGED_BEFOREPARENT, 0x00780078, 0x00331EC00);
+				//SendMessage(tb, WM_SETTINGCHANGE, 0x9F, 0);
+				//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
 
 				//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
 				HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
