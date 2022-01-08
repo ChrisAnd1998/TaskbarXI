@@ -366,7 +366,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		if (makebigger == 1) {
 			for (;;) {
 				int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-				if (elapsed >= 1) {
+				if (elapsed >= 90 / curDPI) {
 					break;
 				}
 				elapsed = NULL;
@@ -376,7 +376,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		else {
 			for (;;) {
 				int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-				if (elapsed >= 3) {
+				if (elapsed >= 350 / curDPI) {
 					break;
 				}
 				elapsed = NULL;
