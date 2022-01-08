@@ -91,15 +91,12 @@ void SetWindowBlur()
 						ACCENTPOLICY policy = { 3, 0, 0, 0 }; // ACCENT_ENABLE_BLURBEHIND=3, ACCENT_INVALID=4...
 						WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 						SetWindowCompositionAttribute(tb, &data);
-						
 					}
 				}
-				
+
 				std::this_thread::sleep_for(std::chrono::milliseconds(14));
 			}
-			
 		}
-
 	}
 }
 
@@ -144,8 +141,6 @@ void exiting() {
 			HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
 			SetWindowRgn(tb, region_Empty, TRUE);
 
-		
-
 			HWND Shell_TrayWnd = FindWindow(L"Shell_TrayWnd", 0);
 			HWND TrayNotifyWnd = FindWindowEx(Shell_TrayWnd, 0, L"TrayNotifyWnd", NULL);
 
@@ -156,7 +151,6 @@ void exiting() {
 			ShowWindow(ToolbarWindow32, SW_SHOW);
 			ShowWindow(SysPager, SW_SHOW);
 			ShowWindow(Button, SW_SHOW);
-
 
 			SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
 			//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
@@ -275,6 +269,10 @@ HRESULT UpdateWindows11RoundCorners(HWND hWnd)
 
 int isAnimating;
 
+INT Linear(int currentTime, int minVal, int maxVal, int duration) {
+	return maxVal * currentTime / duration + minVal;
+}
+
 void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	//if (isAnimating == 0) {
 	isAnimating = 1;
@@ -299,7 +297,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 
 	//std::wcout << currenttbrect.left * curDPI / 100 << "|" << newtbrect.left << std::endl;
 
-	if (abs((currenttbrect.left * curDPI / 100) - (newtbrect.left)) >= 100) {
+	if (abs((currenttbrect.left * curDPI / 100) - (newtbrect.left)) >= 200) {
 		SetWindowRgn(hWND, region, TRUE);
 		return;
 	}
@@ -319,9 +317,11 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	//std::wcout << left * curDPI / 100 << "|" << newtbrect.left << std::endl;
 
 	for (;;) {
+		int currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
 		//GetWindowRgn(hWND, currenttbreg);
 		//GetRgnBox(currenttbreg, &currenttbrect);
-	    std::wcout << left << "|" << newtbrect.left << std::endl;
+		//std::wcout << left << "|" << newtbrect.left << std::endl;
 
 		if (left == newtbrect.left) {
 			//End reached
@@ -362,6 +362,28 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			right = abs(right - 1);
 		}
 
+		//Speed
+		if (makebigger == 1) {
+			for (;;) {
+				int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
+				if (elapsed >= 1) {
+					break;
+				}
+				elapsed = NULL;
+				std::this_thread::sleep_for(std::chrono::milliseconds(0));
+			}
+		}
+		else {
+			for (;;) {
+				int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
+				if (elapsed >= 3) {
+					break;
+				}
+				elapsed = NULL;
+				std::this_thread::sleep_for(std::chrono::milliseconds(0));
+			}
+		}
+
 		//std::wcout << left << std::endl;
 		if (square == 0) {
 			HRGN framereg = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
@@ -374,13 +396,11 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			framereg = NULL;
 		}
 
-		//Speed
+		currentTime = NULL;
 		//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
-
 	SetWindowRgn(hWND, region, TRUE);
-
 
 	isAnimating = 0;
 	//}
@@ -595,8 +615,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	cur_dir = std::string(buffer);// (argv[0]);
 
-	
-
 	if (cur_dir.find("40210ChrisAndriessen") != std::string::npos) {
 		// Application is store version.
 		isstore = 1;
@@ -611,7 +629,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	if (blur == 1) {
-		std::thread{SetWindowBlur}.detach();
+		std::thread{ SetWindowBlur }.detach();
 	}
 
 	std::wcout << "Initialize complete!" << std::endl;
@@ -630,13 +648,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//DispatchMessage(&msg);
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		SetTaskbar();
-
-		
 	}
-
-	
 }
-
 
 void SetTaskbar() {
 	std::wcout.clear();
@@ -994,7 +1007,6 @@ void SetTaskbar() {
 						}
 						else {
 							std::thread{ SetWindowRegionAnimated, Shell_TrayWnd, region_Both }.detach();
-						
 						}
 
 						//SetWindowRegionAnimated(Shell_TrayWnd, region_Both);
@@ -1119,9 +1131,6 @@ void SetTaskbar() {
 					bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
 				}
 
-
-				
-
 				HRGN region_Shell_SecondaryTrayWnd;
 
 				if (square == 0) {
@@ -1163,11 +1172,7 @@ void SetTaskbar() {
 							SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
 						}
 						else {
-							
-
-							std::thread{SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd}.detach();
-						
-
+							std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
 						}
 					}
 					else {
@@ -1200,11 +1205,8 @@ void SetTaskbar() {
 			} //end secondary taskbar
 			title = NULL;
 		}
-
 	}
 
-
-	
 	//std::wcout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	working = 0;
