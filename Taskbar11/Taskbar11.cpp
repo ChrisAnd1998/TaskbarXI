@@ -416,6 +416,14 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	return;
 }
 
+void taskbarLoop() {
+	MSG msg;
+	for (;;) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		SetTaskbar();
+	}
+}
+
 //int main(int argc, char* argv[])
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -530,6 +538,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
+	//SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 
 	SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 
@@ -641,13 +650,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::atexit(exiting);
 
-	for (;;) { //while (GetMessage(&msg, NULL, 0, 0)) {
+	std::thread{ taskbarLoop }.detach();
+
+	for (;;) {//while (GetMessage(&msg, NULL, 0, 0)) {
 		//GetMessage() blocks until there is a message available to retrieve. If you don't want to wait, then use PeekMessage() instead.
 		PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		//TranslateMessage(&msg);
 		//DispatchMessage(&msg);
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
-		SetTaskbar();
 	}
 }
 
