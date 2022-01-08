@@ -38,6 +38,9 @@ int maximized_Count;
 int mtaskbar_Revert;
 int staskbar_Revert;
 
+int maxCountChanged;
+int oldMaxCount;
+
 int trayleft;
 
 int isstore;
@@ -91,6 +94,7 @@ void SetWindowBlur()
 						ACCENTPOLICY policy = { 3, 0, 0, 0 }; // ACCENT_ENABLE_BLURBEHIND=3, ACCENT_INVALID=4...
 						WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 						SetWindowCompositionAttribute(tb, &data);
+						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x035BF060);
 					}
 				}
 
@@ -656,6 +660,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//GetMessage() blocks until there is a message available to retrieve. If you don't want to wait, then use PeekMessage() instead.
 		PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
 		//TranslateMessage(&msg);
 		//DispatchMessage(&msg);
 	}
@@ -717,6 +722,9 @@ void SetTaskbar() {
 
 	std::wcout << "Clearing maximized window list..." << std::endl;
 
+	oldMaxCount = maximized_Count;
+
+	maxCountChanged = 0;
 	maximized_Count = 0;
 	maximized_List[0] = 0;
 	maximized_List[1] = 0;
@@ -734,11 +742,6 @@ void SetTaskbar() {
 
 	for (HWND tb : taskbar_List) {
 		if (tb != 0) {
-			//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
-			//SendMessage(tb, WM_ERASEBKGND, TRUE, NULL);
-			//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
-			//SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
-
 			int taskbariscenter;
 
 			HKEY hKey;
@@ -848,26 +851,8 @@ void SetTaskbar() {
 
 				SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
 
-				//int hh = 0;
-				//SendMessage(tb, WM_GETDPISCALEDSIZE, hh, 0x78);
-				//std::wcout << hh << std::endl;
+				SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
 
-				//SendMessage(tb, WM_ERASEBKGND, TRUE, 0);
-				//SendMessage(tb, WM_DPICHANGED, 0, 0);
-				//SendMessage(tb, WM_DESTROY, TRUE, 0);
-				//SendMessage(tb, WM_DPICHANGED, 0x0000000000900090, 0x000000DD351BE7E0);
-				//SendMessage(tb, WM_DPICHANGED_AFTERPARENT, 0x0000000000900090, 0x000000DD351BE7E0);
-
-				//SendMessage(tb, WM_DISPLAYCHANGE, 0x00000020, 0x08700F00);
-				//SendMessage(tb, WM_DPICHANGED, 0x00780078, 0x00331EC00);
-				//SetWindowPos(tb, NULL, 0, 0, 3840, 100, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_FRAMECHANGED | 1800);
-				//SendMessage(tb, WM_SIZE, 0, 0x480F00);
-				//SendMessage(tb, WM_DPICHANGED_AFTERPARENT, 0x00780078, 0x00331EC00);
-				//SendMessage(tb, WM_DPICHANGED_BEFOREPARENT, 0x00780078, 0x00331EC00);
-				//SendMessage(tb, WM_SETTINGCHANGE, 0x9F, 0);
-				//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
-
-				//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
 				HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 				GetWindowRgn(tb, currenttbreg);
 				RECT currenttbrect;
@@ -896,19 +881,6 @@ void SetTaskbar() {
 				int width_Shell_TrayWnd = (rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left);
 				int height_Shell_TrayWnd = (rect_Shell_TrayWnd.bottom - rect_Shell_TrayWnd.top);
 
-				//int width_SysPager = (rect_SysPager.right - rect_SysPager.left) / 2;
-
-				//int left = abs(rect_MSTaskSwWClass.right - width_Shell_TrayWnd - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-				//SendMessage(Start, WM_SETREDRAW, TRUE, NULL);
-
-				//int left = abs(rect_Start.left - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-				//int top = 2 * curDPI / 100;
-				//int right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100;
-				//int bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
-				//SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
-
-				//SendMessage(Shell_TrayWnd, WM_SIZING, 0x3, 0x0354D4D0);
-
 				int left;
 				int top;
 				int right;
@@ -917,7 +889,6 @@ void SetTaskbar() {
 				if (taskbariscenter == 1) {
 					if (sticky == 1) {
 						left = (abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100) - (((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2) * curDPI / 100);
-						//left = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100;
 					}
 					else {
 						left = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.right + 1) * curDPI / 100;
@@ -936,21 +907,11 @@ void SetTaskbar() {
 				}
 
 				if (sticky == 1) {
-					//ShowWindow(ToolbarWindow32, SW_HIDE);
-					//ShowWindow(SysPager, SW_HIDE);
-					//ShowWindow(Button, SW_HIDE);
-					//SendMessage(Button, WM_SETREDRAW, FALSE, 0);
-					//SendMessage(ToolbarWindow32, WM_SETREDRAW, FALSE, 0);
-					//SendMessage(SysPager, WM_SETREDRAW, FALSE, 0);
-
 					// Cool feature but to have this running stable all the tray icons have to be disabled to prevent the system tray area from refreshing.
 
 					ShowWindow(ToolbarWindow32, SW_HIDE);
 					ShowWindow(SysPager, SW_HIDE);
 					ShowWindow(Button, SW_HIDE);
-					//std::wcout << width_SysPager << std::endl;
-
-					//SendMessage(Button, WM_SETREDRAW, TRUE, 0);
 
 					SetWindowPos(DesktopWindowContentBridge, NULL, -(((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2)), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 					SetWindowPos(TrayNotifyWnd, NULL, rect_MSTaskSwWClass.right - ((rect_TrayNotifyWnd.right - rect_TrayNotifyWnd.left) / 2), 0, 0, 0, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
@@ -985,6 +946,7 @@ void SetTaskbar() {
 							SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
 							mtaskbar_Revert = 1;
 							region_Empty = NULL;
+							break;
 						}
 					}
 				}
@@ -1006,32 +968,17 @@ void SetTaskbar() {
 					RECT newtbrect;
 					GetRgnBox(region_ShellTrayWnd, &newtbrect);
 
-					// std::wcout << newtbrect.left << ">" << abs(currenttbrect.left) * curDPI / 100 << std::endl;
-					//int justgotupdate;
 					if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100 && newtbrect.left + 1 != abs(currenttbrect.left) * curDPI / 100 && newtbrect.left - 1 != abs(currenttbrect.left) * curDPI / 100) {
-						//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
-						//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
-
 						if (smoothresize == 0) {
 							SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 						}
 						else {
 							std::thread{ SetWindowRegionAnimated, Shell_TrayWnd, region_Both }.detach();
 						}
-
-						//SetWindowRegionAnimated(Shell_TrayWnd, region_Both);
-
-						//SetFrameRgn(Shell_TrayWnd, region_Both, TRUE);
-
-						//SendMessage(tb, WM_SETTINGCHANGE, FALSE, 0);
-						//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 					}
 					else {
 						if (rect_TrayNotifyWnd.left != trayleft) {
 							SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
-							//trayleft = rect_TrayNotifyWnd.left;
-
-							//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
 						}
 						else {
 							std::wcout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
@@ -1040,17 +987,6 @@ void SetTaskbar() {
 
 					region_Both = NULL;
 				}
-
-				// HRGN region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
-				// HRGN region_TrayNotifyWnd = CreateRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left + 2) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom);
-
-				//UpdateWindows11RoundCorners(Shell_TrayWnd);
-				//SetWindowPos(Shell_TrayWnd, NULL, 0 , 0, 500, 20, SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
-
-				//UpdateWindows11RoundCorners(Shell_TrayWnd);
-				//UpdateWindows11RoundCorners(RebarWindow32);
-				//UpdateWindows11RoundCorners(DesktopWindowContentBridge);
-				//UpdateWindows11RoundCorners(MSTaskSwWClass);
 
 				std::wcout << "Done with " << title << " @ " << Shell_TrayWnd << std::endl;
 
@@ -1071,16 +1007,12 @@ void SetTaskbar() {
 				region_ShellTrayWnd = NULL;
 				region_TrayNotifyWnd = NULL;
 
+				std::wcout << oldMaxCount << "|" << maximized_Count << std::endl;
+				if (oldMaxCount != maximized_Count) {
+					SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
+				}
+
 				mtaskbar_Revert = 0;
-
-				//SendMessage(tb, WM_SETREDRAW, FALSE, NULL);
-				//SendMessage(tb, WM_THEMECHANGED, TRUE, 0);
-				//SendMessage(tb, WM_ERASEBKGND, TRUE, NULL);
-				//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
-				//SendMessage(tb, WM_SETREDRAW, TRUE, NULL);
-
-				//SendMessage(Shell_TrayWnd, WM_SETTINGCHANGE, TRUE, NULL);
-				//SendMessage(Shell_TrayWnd, WM_THEMECHANGED, TRUE, 0);
 			} //end primary taskbar
 
 			// This is a secondary taskbar
@@ -1093,6 +1025,8 @@ void SetTaskbar() {
 				HWND MSTaskListWClass = FindWindowEx(WorkerW, 0, L"MSTaskListWClass", NULL);
 
 				SendMessage(Shell_SecondaryTrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
+
+				SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
 
 				HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 				GetWindowRgn(tb, currenttbreg);
@@ -1162,6 +1096,7 @@ void SetTaskbar() {
 							SetWindowRgn(Shell_SecondaryTrayWnd, region_Empty, TRUE);
 							staskbar_Revert = 1;
 							region_Empty = NULL;
+							break;
 						}
 					}
 				}
@@ -1192,8 +1127,6 @@ void SetTaskbar() {
 					region_Shell_SecondaryTrayWnd = NULL;
 				}
 
-				staskbar_Revert = 0;
-
 				std::wcout << "Done with " << title << " @ " << Shell_SecondaryTrayWnd << std::endl;
 
 				// dispose
@@ -1210,8 +1143,11 @@ void SetTaskbar() {
 				width_Shell_SecondaryTrayWnd = NULL;
 				height_Shell_SecondaryTrayWnd = NULL;
 
-				//SendMessage(Shell_SecondaryTrayWnd, WM_SETTINGCHANGE, TRUE, 0);
-				//SendMessage(Shell_SecondaryTrayWnd, WM_THEMECHANGED, TRUE, 0);
+				if (oldMaxCount != maximized_Count) {
+					SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
+				}
+
+				staskbar_Revert = 0;
 			} //end secondary taskbar
 			title = NULL;
 		}
@@ -1219,6 +1155,7 @@ void SetTaskbar() {
 
 	//std::wcout << "Done with all taskbars. Sleeping for 250 milliseconds..." << std::endl;
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
 	working = 0;
 }
 
@@ -1233,11 +1170,6 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 		std::wcout << "Main taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
-		//SendMessage(hWND, WM_SETREDRAW, FALSE, NULL);
-		//SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
-		//SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
-		//SendMessage(hWND, WM_SETTINGCHANGE, TRUE, NULL);
-		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
 	}
 
 	if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
@@ -1245,11 +1177,6 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 		std::wcout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
-		//SendMessage(hWND, WM_SETREDRAW, FALSE, NULL);
-		//SendMessage(hWND, WM_THEMECHANGED, TRUE, 0);
-		//SendMessage(hWND, WM_ERASEBKGND, TRUE, NULL);
-		//SendMessage(hWND, WM_SETTINGCHANGE, TRUE, NULL);
-		//SendMessage(hWND, WM_SETREDRAW, TRUE, NULL);
 	}
 
 	hWND = NULL;
