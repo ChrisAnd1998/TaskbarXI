@@ -350,7 +350,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			else {
 				for (;;) {
 					int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-					if (elapsed >= 900 / curDPI) {
+					if (elapsed >= 750 / curDPI) {
 						break;
 					}
 					elapsed = NULL;
