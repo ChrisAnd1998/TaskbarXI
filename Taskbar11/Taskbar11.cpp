@@ -44,6 +44,8 @@ int oldMaxCount;
 
 int trayleft;
 
+int taskbariscenter = 1;
+
 int isstore;
 
 bool boxopen;
@@ -110,6 +112,7 @@ void SetWindowBlur()
 
 VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
+
 	if (eventtrigger == 0) {
 		if (working == 0) {
 			eventtrigger = 1;
@@ -154,6 +157,7 @@ void exiting() {
 			ShowWindow(Button, SW_SHOW);
 
 			SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
+			SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 		}
 	}
 
@@ -263,7 +267,6 @@ HRESULT UpdateWindows11RoundCorners(HWND hWnd)
 
 void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	try {
-
 		//Make sure taskbar does not get multiple times at once.
 		for (HWND tb : animating_List) {
 			if (hWND != 0) {
@@ -279,10 +282,6 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			}
 		}
 
-
-		std::wcout << animating_Count << std::endl;
-
-
 		INT curDPI = GetDpiForWindow(hWND) * 1.041666666666667;
 		HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 		RECT currenttbrect;
@@ -294,19 +293,19 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 
 		int makebigger;
 
-		if (currenttbrect.left == 0) {
+		if (currenttbrect.right == 0) {
 			SetWindowRgn(hWND, region, TRUE);
 			GetWindowRgn(hWND, currenttbreg);
 			GetRgnBox(currenttbreg, &currenttbrect);
 			GetRgnBox(region, &newtbrect);
 		}
 
-		if (abs((currenttbrect.left * curDPI / 100) - (newtbrect.left)) >= 200) {
+		if (abs((currenttbrect.right * curDPI / 100) - (newtbrect.right)) >= 100) {
 			SetWindowRgn(hWND, region, TRUE);
 			return;
 		}
 
-		if (currenttbrect.left * curDPI / 100 >= newtbrect.left) {
+		if (currenttbrect.right * curDPI / 100 <= newtbrect.right) {
 			makebigger = 1;
 		}
 		else {
@@ -318,16 +317,21 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		int right = abs(currenttbrect.right * curDPI / 100);
 		int bottom = newtbrect.bottom;
 
-		
+		if (newtbrect.right == 0) {
+			SetWindowRgn(hWND, region, TRUE);
+			return;
+		}
 
 		for (;;) {
-			
 			int currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-			if (left == newtbrect.left) {
-				//End reached
-				break;
+			if (taskbariscenter == 1) {
+				if (left == newtbrect.left) {
+					//End reached
+					break;
+				}
 			}
+
 			if (right == newtbrect.right) {
 				//End reached
 				break;
@@ -335,29 +339,42 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 
 			if (makebigger == 1) {
 				//The taskbar needs to expand
-				if (left <= newtbrect.left) {
-					//End reached
-					break;
+				if (taskbariscenter == 1) {
+					if (left <= newtbrect.left) {
+						//End reached
+						break;
+					}
 				}
+
 				if (right >= newtbrect.right) {
 					//End reached
 					break;
 				}
 
-				left = abs(left - 1);
+				if (taskbariscenter == 1) {
+					left = abs(left - 1);
+				}
+
 				right = abs(right + 1);
 			}
 			else {
 				//The taskbar needs to shrink
-				if (left >= newtbrect.left) {
-					//End reached
-					break;
+				if (taskbariscenter == 1) {
+					if (left >= newtbrect.left) {
+						//End reached
+						break;
+					}
 				}
+
 				if (right <= newtbrect.right) {
 					//End reached
 					break;
 				}
-				left = abs(left + 1);
+
+				if (taskbariscenter == 1) {
+					left = abs(left + 1);
+				}
+
 				right = abs(right - 1);
 			}
 
@@ -365,20 +382,30 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			if (makebigger == 1) {
 				for (;;) {
 					int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-					if (elapsed >= 90 / curDPI) {
+					int speed = 90;
+					if (taskbariscenter == 0) {
+						speed = 10;
+					}
+					if (elapsed >= speed / curDPI) {
 						break;
 					}
 					elapsed = NULL;
+					speed = NULL;
 					//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				}
 			}
 			else {
 				for (;;) {
 					int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-					if (elapsed >= 750 / curDPI) {
+					int speed = 750;
+					if (taskbariscenter == 0) {
+						speed = 50;
+					}
+					if (elapsed >= speed / curDPI) {
 						break;
 					}
 					elapsed = NULL;
+					speed = NULL;
 					//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				}
 			}
@@ -394,10 +421,17 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 				framereg = NULL;
 			}
 
+			
+
 			currentTime = NULL;
 		}
 
 		SetWindowRgn(hWND, region, TRUE);
+
+		SendMessage(hWND, WM_WINDOWPOSCHANGED, TRUE, 0);
+	     SendMessage(hWND, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
+
+		 SetWindowRgn(hWND, region, TRUE);
 
 		curDPI = NULL;
 		currenttbreg = NULL;
@@ -423,10 +457,8 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 
 		tbid = NULL;
 
-
 		return;
 	}
-
 
 	catch (...) { SetWindowRgn(hWND, region, TRUE); }
 }
@@ -438,6 +470,8 @@ void taskbarLoop() {
 		callSetTaskbar();
 	}
 }
+
+
 
 int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -548,7 +582,6 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 	EnumWindows(EnumCallbackInstances, NULL);
 
-
 	working = 1;
 
 	SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
@@ -572,6 +605,9 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 	std::wcout << "Explorer found!" << std::endl;
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+	SendMessage(Explorer, WM_THEMECHANGED, TRUE, NULL);
+	SendMessage(Explorer, WM_SETTINGCHANGE, TRUE, NULL);
 
 	//Setup Notifyicon
 	MSG msg;
@@ -676,6 +712,8 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 	std::thread{ taskbarLoop }.detach();
 
+	
+
 	for (;;) {
 		//GetMessage() blocks until there is a message available to retrieve. If you don't want to wait, then use PeekMessage() instead.
 		PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
@@ -754,14 +792,11 @@ void SetTaskbar() {
 		maximized_List[7] = 0;
 		maximized_List[8] = 0;
 		maximized_List[9] = 0;
-	
 
 		EnumWindows(EnumCallbackMaximized, NULL);
 
 		for (HWND tb : taskbar_List) {
 			if (tb != 0) {
-				int taskbariscenter = 1;
-
 				HKEY hKey;
 				DWORD buffer;
 				LONG result;
@@ -796,7 +831,6 @@ void SetTaskbar() {
 				curreg_Check_handle = NULL;
 				curreg_Check_region = NULL;
 
-			
 				int length = 256;
 				wchar_t* title = new wchar_t[length];
 				GetClassName(tb, title, length);
@@ -804,7 +838,7 @@ void SetTaskbar() {
 				// Check if hWid is still valid if not find again
 				if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
 					free(title);
-				
+
 					std::wcout << "hWID invalid!" << std::endl;
 
 					HWND Explorer = NULL;
@@ -855,8 +889,6 @@ void SetTaskbar() {
 
 				// This is the main taskbar
 				if (wcscmp(title, L"Shell_TrayWnd") == 0) {
-					
-					
 					HWND Shell_TrayWnd = tb;
 					HWND Start = FindWindowEx(Shell_TrayWnd, 0, L"Start", NULL);
 					HWND DesktopWindowContentBridge = FindWindowEx(Shell_TrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
@@ -916,6 +948,19 @@ void SetTaskbar() {
 						top = 0 * curDPI / 100;
 						right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 3) * curDPI / 100;
 						bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+
+						if (left == 0) {
+							//Not possible
+							break;
+						}
+						if (left <= 0) {
+							//Not possible
+							break;
+						}
+						if (left >= 10000) {
+							//Not possible
+							break;
+						}
 					}
 
 					if (taskbariscenter == 0) {
@@ -923,6 +968,14 @@ void SetTaskbar() {
 						top = 0 * curDPI / 100;
 						right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 3) * curDPI / 100;
 						bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
+						if (left >= 50) {
+							//Not possible
+							break;
+						}
+						if (left <= 0) {
+							//Not possible
+							break;
+						}
 					}
 
 					if (sticky == 1) {
@@ -943,6 +996,8 @@ void SetTaskbar() {
 
 					HRGN region_ShellTrayWnd;
 					HRGN region_TrayNotifyWnd;
+
+					int trayleft = abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left);
 
 					if (square == 0) {
 						region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
@@ -987,7 +1042,7 @@ void SetTaskbar() {
 						RECT newtbrect;
 						GetRgnBox(region_ShellTrayWnd, &newtbrect);
 
-						if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100 && newtbrect.left + 1 != abs(currenttbrect.left) * curDPI / 100 && newtbrect.left - 1 != abs(currenttbrect.left) * curDPI / 100) {
+						if (newtbrect.right != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right + 1 != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right - 1 != abs(currenttbrect.right) * curDPI / 100) {
 							if (smoothresize == 0) {
 								SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 							}
@@ -1029,14 +1084,13 @@ void SetTaskbar() {
 					SysPager = NULL;
 					Button = NULL;
 
-
 					free(Shell_TrayWnd);
 					free(Start);
 					free(RebarWindow32);
 					free(MSTaskSwWClass);
 					free(TrayNotifyWnd);
 					free(DesktopWindowContentBridge);
-				    free(ToolbarWindow32);
+					free(ToolbarWindow32);
 					free(SysPager);
 					free(Button);
 
@@ -1051,8 +1105,6 @@ void SetTaskbar() {
 
 				// This is a secondary taskbar
 				if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
-					
-					
 					HWND Shell_SecondaryTrayWnd = tb;
 					//HWND Start = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Start", NULL);
 					HWND WorkerW = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"WorkerW", NULL);
@@ -1098,6 +1150,18 @@ void SetTaskbar() {
 						top = 0 * curDPI / 100;
 						right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 3) * curDPI / 100;
 						bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
+						if (left == 0) {
+							//Not possible
+							break;
+						}
+						if (left <= 0) {
+							//Not possible
+							break;
+						}
+						if (left >= 10000) {
+							//Not possible
+							break;
+						}
 					}
 
 					if (taskbariscenter == 0) {
@@ -1105,6 +1169,14 @@ void SetTaskbar() {
 						top = 0 * curDPI / 100;
 						right = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.left + 3) * curDPI / 100;
 						bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
+						if (left >= 50) {
+							//Not possible
+							break;
+						}
+						if (left <= 0) {
+							//Not possible
+							break;
+						}
 					}
 
 					HRGN region_Shell_SecondaryTrayWnd;
@@ -1136,7 +1208,7 @@ void SetTaskbar() {
 					if (staskbar_Revert == 0) {
 						RECT newtbrect;
 						GetRgnBox(region_Shell_SecondaryTrayWnd, &newtbrect);
-						if (newtbrect.left != abs(currenttbrect.left) * curDPI / 100 && newtbrect.left - 1 != abs(currenttbrect.left) * curDPI / 100 && newtbrect.left + 1 != abs(currenttbrect.left) * curDPI / 100) {
+						if (newtbrect.right != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right - 1 != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right + 1 != abs(currenttbrect.right) * curDPI / 100) {
 							if (smoothresize == 0) {
 								SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
 							}
@@ -1172,8 +1244,8 @@ void SetTaskbar() {
 					free(MSTaskListWClass);
 					free(DesktopWindowContentBridge);
 
-				free(title);
-					
+					free(title);
+
 					if (oldMaxCount != maximized_Count) {
 						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
 					}
