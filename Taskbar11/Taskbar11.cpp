@@ -53,6 +53,7 @@ VOID SetTaskbar();
 
 //Settings
 int square;
+int corner_Radius;
 int ignoremax;
 int notray;
 int hidetraywnd;
@@ -318,10 +319,10 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		int right = abs(currenttbrect.right * curDPI / 100);
 		int bottom = newtbrect.bottom;
 
-		
+
 
 		for (;;) {
-			
+
 			int currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 			if (left == newtbrect.left) {
@@ -459,6 +460,10 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			square = 1;
 			cur_cmd.append(" -square");
 		}
+		if (wcscmp(szArgList[i], L"-radius") == 0) {
+			corner_Radius = _wtoi(szArgList[++i]);
+			cur_cmd.append(" -radius " + corner_Radius);
+		}
 		if (wcscmp(szArgList[i], L"-ignoremax") == 0) {
 			ignoremax = 1;
 			cur_cmd.append(" -ignoremax");
@@ -528,6 +533,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			std::wcout << "-help				(Shows this window)" << std::endl;
 			std::wcout << "-stop				(Stops TaskbarXI and reverts the taskbar to default)" << std::endl;
 			std::wcout << "-square				(Uses square corners instead of rounded corners)" << std::endl;
+			std::wcout << "-radius <radius>		(Define the corner radius you want to be used)" << std::endl;
 			std::wcout << "-ignoremax			(Does not revert the taskbar on maximized window)" << std::endl;
 			std::wcout << "-notray				(Disables system tray icon)" << std::endl;
 			std::wcout << "-hidetraywnd			(Hides the system tray area)" << std::endl;
@@ -535,7 +541,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			std::wcout << "-removestartup			(Removes startup entry and exits TaskbarXI)" << std::endl;
 			std::wcout << "-console			(Displays a console window)" << std::endl;
 			std::wcout << "-sticky				(Sticks the system tray to the taskbar (removes the tray icons to keep it stable))" << std::endl;
-			std::wcout << "-smoothresize				(Resizes the taskbar smoothly)" << std::endl;
+			std::wcout << "-smoothresize			(Resizes the taskbar smoothly)" << std::endl;
 			std::wcout << "-blur				(Makes the taskbar blurred)" << std::endl;
 			std::wcout << "" << std::endl;
 			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -square";
@@ -754,7 +760,7 @@ void SetTaskbar() {
 		maximized_List[7] = 0;
 		maximized_List[8] = 0;
 		maximized_List[9] = 0;
-	
+
 
 		EnumWindows(EnumCallbackMaximized, NULL);
 
@@ -796,7 +802,7 @@ void SetTaskbar() {
 				curreg_Check_handle = NULL;
 				curreg_Check_region = NULL;
 
-			
+
 				int length = 256;
 				wchar_t* title = new wchar_t[length];
 				GetClassName(tb, title, length);
@@ -804,7 +810,7 @@ void SetTaskbar() {
 				// Check if hWid is still valid if not find again
 				if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
 					free(title);
-				
+
 					std::wcout << "hWID invalid!" << std::endl;
 
 					HWND Explorer = NULL;
@@ -855,8 +861,8 @@ void SetTaskbar() {
 
 				// This is the main taskbar
 				if (wcscmp(title, L"Shell_TrayWnd") == 0) {
-					
-					
+
+
 					HWND Shell_TrayWnd = tb;
 					HWND Start = FindWindowEx(Shell_TrayWnd, 0, L"Start", NULL);
 					HWND DesktopWindowContentBridge = FindWindowEx(Shell_TrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
@@ -945,8 +951,8 @@ void SetTaskbar() {
 					HRGN region_TrayNotifyWnd;
 
 					if (square == 0) {
-						region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
-						region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
+						region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, corner_Radius, corner_Radius);
+						region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, corner_Radius, corner_Radius);
 					}
 					else {
 						region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
@@ -1036,7 +1042,7 @@ void SetTaskbar() {
 					free(MSTaskSwWClass);
 					free(TrayNotifyWnd);
 					free(DesktopWindowContentBridge);
-				    free(ToolbarWindow32);
+					free(ToolbarWindow32);
 					free(SysPager);
 					free(Button);
 
@@ -1051,8 +1057,8 @@ void SetTaskbar() {
 
 				// This is a secondary taskbar
 				if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
-					
-					
+
+
 					HWND Shell_SecondaryTrayWnd = tb;
 					//HWND Start = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Start", NULL);
 					HWND WorkerW = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"WorkerW", NULL);
@@ -1172,8 +1178,8 @@ void SetTaskbar() {
 					free(MSTaskListWClass);
 					free(DesktopWindowContentBridge);
 
-				free(title);
-					
+					free(title);
+
 					if (oldMaxCount != maximized_Count) {
 						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
 					}
