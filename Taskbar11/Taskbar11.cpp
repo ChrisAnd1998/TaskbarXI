@@ -350,7 +350,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			else {
 				for (;;) {
 					int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-					if (elapsed >= 350 / curDPI) {
+					if (elapsed >= 900 / curDPI) {
 						break;
 					}
 					elapsed = NULL;
@@ -697,7 +697,7 @@ void SetTaskbar() {
 		maximized_List[7] = 0;
 		maximized_List[8] = 0;
 		maximized_List[9] = 0;
-		maximized_List[10] = 0;
+	
 
 		EnumWindows(EnumCallbackMaximized, NULL);
 
