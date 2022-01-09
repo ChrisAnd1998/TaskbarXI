@@ -21,7 +21,7 @@ NOTIFYICONDATA nid = {};
 std::string cur_dir;
 std::string cur_cmd;
 
-int working;
+int working = -1;
 
 int eventtrigger;
 
@@ -55,6 +55,7 @@ VOID SetTaskbar();
 
 //Settings
 int square;
+int corner_Radius;
 int ignoremax;
 int notray;
 int hidetraywnd;
@@ -83,6 +84,10 @@ struct WINCOMPATTRDATA
 
 void callSetTaskbar() {
 	std::thread{ SetTaskbar }.detach();
+}
+
+int __cdecl main(int argc, char** argv) {
+	return WinMain(0, 0, NULL, 0);
 }
 
 typedef BOOL(WINAPI* pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
@@ -268,19 +273,20 @@ HRESULT UpdateWindows11RoundCorners(HWND hWnd)
 void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	try {
 		//Make sure taskbar does not get multiple times at once.
-		for (HWND tb : animating_List) {
-			if (hWND != 0) {
-				if (hWND == tb) {
-					//Taskbar is already animating.
-					return;
-				}
-				else {
-					animating_List[animating_Count] = hWND;
-					animating_Count += 1;
-					break;
-				}
-			}
-		}
+		//for (HWND tb : animating_List) {
+		//	if (hWND != 0) {
+		//		if (hWND == tb) {
+		//			//Taskbar is already animating.
+		//			//SetWindowRgn(hWND, region, TRUE);
+		//			return;
+		//		}
+		//		else {
+		//			animating_List[animating_Count] = hWND;
+		//			animating_Count += 1;
+		//			break;
+		//		}
+		//	}
+		//}
 
 		INT curDPI = GetDpiForWindow(hWND) * 1.041666666666667;
 		HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
@@ -328,12 +334,14 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			if (taskbariscenter == 1) {
 				if (left == newtbrect.left) {
 					//End reached
+					SetWindowRgn(hWND, region, TRUE);
 					break;
 				}
 			}
 
 			if (right == newtbrect.right) {
 				//End reached
+				SetWindowRgn(hWND, region, TRUE);
 				break;
 			}
 
@@ -342,12 +350,14 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 				if (taskbariscenter == 1) {
 					if (left <= newtbrect.left) {
 						//End reached
+						SetWindowRgn(hWND, region, TRUE);
 						break;
 					}
 				}
 
 				if (right >= newtbrect.right) {
 					//End reached
+					SetWindowRgn(hWND, region, TRUE);
 					break;
 				}
 
@@ -362,12 +372,14 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 				if (taskbariscenter == 1) {
 					if (left >= newtbrect.left) {
 						//End reached
+						SetWindowRgn(hWND, region, TRUE);
 						break;
 					}
 				}
 
 				if (right <= newtbrect.right) {
 					//End reached
+					SetWindowRgn(hWND, region, TRUE);
 					break;
 				}
 
@@ -387,6 +399,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 						speed = 10;
 					}
 					if (elapsed >= speed / curDPI) {
+						//SetWindowRgn(hWND, region, TRUE);
 						break;
 					}
 					elapsed = NULL;
@@ -402,6 +415,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 						speed = 50;
 					}
 					if (elapsed >= speed / curDPI) {
+						//SetWindowRgn(hWND, region, TRUE);
 						break;
 					}
 					elapsed = NULL;
@@ -411,7 +425,7 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			}
 
 			if (square == 0) {
-				HRGN framereg = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
+				HRGN framereg = CreateRoundRectRgn(left, top, right, bottom, corner_Radius, corner_Radius);
 				SetWindowRgn(hWND, framereg, TRUE);
 				framereg = NULL;
 			}
@@ -441,21 +455,22 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		right = NULL;
 		bottom = NULL;
 
-		int tbid = 0;
+		//int tbid = 0;
 
 		//Free the current taskbar so it can be animated again.
-		for (HWND tb : animating_List) {
-			if (hWND != 0) {
-				if (hWND == tb) {
-					animating_List[tbid] = 0;
-					animating_Count -= 1;
-					break;
-				}
-			}
-			tbid += 1;
-		}
-
-		tbid = NULL;
+		//for (HWND tb : animating_List) {
+		//	std::wcout << tb << std::endl;
+		//	if (hWND != 0) {
+		//		if (hWND == tb) {
+		//			animating_List[tbid] = 0;
+		//			animating_Count -= 1;
+		//			break;
+		//		}
+		//	}
+		//	tbid += 1;
+		//}
+		//
+		//tbid = NULL;
 
 		return;
 	}
@@ -492,6 +507,10 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 		if (wcscmp(szArgList[i], L"-square") == 0) {
 			square = 1;
 			cur_cmd.append(" -square");
+		}
+		if (wcscmp(szArgList[i], L"-radius") == 0) {
+			corner_Radius = _wtoi(szArgList[++i]);
+			cur_cmd.append(" -radius " + corner_Radius);
 		}
 		if (wcscmp(szArgList[i], L"-ignoremax") == 0) {
 			ignoremax = 1;
@@ -562,6 +581,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			std::wcout << "-help				(Shows this window)" << std::endl;
 			std::wcout << "-stop				(Stops TaskbarXI and reverts the taskbar to default)" << std::endl;
 			std::wcout << "-square				(Uses square corners instead of rounded corners)" << std::endl;
+			std::wcout << "-radius <radius>		(Define the corner radius you want to be used)" << std::endl;
 			std::wcout << "-ignoremax			(Does not revert the taskbar on maximized window)" << std::endl;
 			std::wcout << "-notray				(Disables system tray icon)" << std::endl;
 			std::wcout << "-hidetraywnd			(Hides the system tray area)" << std::endl;
@@ -579,10 +599,16 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 	}
 
 	LocalFree(szArgList);
+	
+
+
+	if (corner_Radius == 0) {
+		corner_Radius = 15;
+	}
 
 	EnumWindows(EnumCallbackInstances, NULL);
 
-	working = 1;
+	working = -1;
 
 	SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
 	SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, NULL, WinEventProcCallback, 0, 0, WINEVENT_SKIPOWNPROCESS);
@@ -606,8 +632,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-	SendMessage(Explorer, WM_THEMECHANGED, TRUE, NULL);
-	SendMessage(Explorer, WM_SETTINGCHANGE, TRUE, NULL);
+	
 
 	//Setup Notifyicon
 	MSG msg;
@@ -652,31 +677,33 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 	// Find all taskbar(s)
 	taskbar_Count = 0;
-	taskbar_List[0] = 0;
-	taskbar_List[1] = 0;
-	taskbar_List[2] = 0;
-	taskbar_List[3] = 0;
-	taskbar_List[4] = 0;
-	taskbar_List[5] = 0;
-	taskbar_List[6] = 0;
-	taskbar_List[7] = 0;
-	taskbar_List[8] = 0;
-	taskbar_List[9] = 0;
+	ZeroMemory(&taskbar_List, sizeof(taskbar_List));
 
 	EnumWindows(EnumCallbackTaskbars, NULL);
 
+
+	for (HWND tb : taskbar_List) {
+
+		RECT rect_tb;
+		GetWindowRect(tb, &rect_tb);
+
+		INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
+
+		HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
+		SetWindowRgn(tb, region_Empty, TRUE);
+
+		SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
+		//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
+	}
+
+
+
+
+
+
 	//Initilize animating list
 	animating_Count = 0;
-	animating_List[0] = 0;
-	animating_List[1] = 0;
-	animating_List[2] = 0;
-	animating_List[3] = 0;
-	animating_List[4] = 0;
-	animating_List[5] = 0;
-	animating_List[6] = 0;
-	animating_List[7] = 0;
-	animating_List[8] = 0;
-	animating_List[9] = 0;
+	ZeroMemory(&animating_List, sizeof(animating_List));
 
 	if (stop == 1) {
 		exiting();
@@ -749,16 +776,7 @@ void SetTaskbar() {
 			std::wcout << "Resetting..." << std::endl;
 
 			taskbar_Count = 0;
-			taskbar_List[0] = 0;
-			taskbar_List[1] = 0;
-			taskbar_List[2] = 0;
-			taskbar_List[3] = 0;
-			taskbar_List[4] = 0;
-			taskbar_List[5] = 0;
-			taskbar_List[6] = 0;
-			taskbar_List[7] = 0;
-			taskbar_List[8] = 0;
-			taskbar_List[9] = 0;
+			ZeroMemory(&taskbar_List, sizeof(taskbar_List));
 
 			std::wstring chars = L"";
 			chars += (wchar_t)34;
@@ -782,16 +800,7 @@ void SetTaskbar() {
 
 		maxCountChanged = 0;
 		maximized_Count = 0;
-		maximized_List[0] = 0;
-		maximized_List[1] = 0;
-		maximized_List[2] = 0;
-		maximized_List[3] = 0;
-		maximized_List[4] = 0;
-		maximized_List[5] = 0;
-		maximized_List[6] = 0;
-		maximized_List[7] = 0;
-		maximized_List[8] = 0;
-		maximized_List[9] = 0;
+		ZeroMemory(&maximized_List, sizeof(maximized_List));
 
 		EnumWindows(EnumCallbackMaximized, NULL);
 
@@ -856,16 +865,7 @@ void SetTaskbar() {
 					std::wcout << "Resetting..." << std::endl;
 
 					taskbar_Count = 0;
-					taskbar_List[0] = 0;
-					taskbar_List[1] = 0;
-					taskbar_List[2] = 0;
-					taskbar_List[3] = 0;
-					taskbar_List[4] = 0;
-					taskbar_List[5] = 0;
-					taskbar_List[6] = 0;
-					taskbar_List[7] = 0;
-					taskbar_List[8] = 0;
-					taskbar_List[9] = 0;
+					ZeroMemory(&taskbar_List, sizeof(taskbar_List));
 
 					std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -1000,8 +1000,8 @@ void SetTaskbar() {
 					int trayleft = abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left);
 
 					if (square == 0) {
-						region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
-						region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, 15, 15);
+						region_ShellTrayWnd = CreateRoundRectRgn(left, top, right, bottom, corner_Radius, corner_Radius);
+						region_TrayNotifyWnd = CreateRoundRectRgn(abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100, top, abs(rect_TrayNotifyWnd.right - rect_Shell_TrayWnd.left + 1) * curDPI / 100, bottom, corner_Radius, corner_Radius);
 					}
 					else {
 						region_ShellTrayWnd = CreateRectRgn(left, top, right, bottom);
@@ -1182,7 +1182,7 @@ void SetTaskbar() {
 					HRGN region_Shell_SecondaryTrayWnd;
 
 					if (square == 0) {
-						region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, 15, 15);
+						region_Shell_SecondaryTrayWnd = CreateRoundRectRgn(left, top, right, bottom, corner_Radius, corner_Radius);
 					}
 					else {
 						region_Shell_SecondaryTrayWnd = CreateRectRgn(left, top, right, bottom);
