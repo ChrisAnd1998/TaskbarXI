@@ -29,8 +29,10 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam);
 BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam);
 BOOL CALLBACK EnumCallbackInstances(HWND hWND, LPARAM lParam);
 
+HWND animating_List[10];
 HWND maximized_List[10];
 HWND taskbar_List[10];
+int animating_Count;
 int taskbar_Count;
 int maximized_Count;
 
@@ -261,6 +263,26 @@ HRESULT UpdateWindows11RoundCorners(HWND hWnd)
 
 void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	try {
+
+		//Make sure taskbar does not get multiple times at once.
+		for (HWND tb : animating_List) {
+			if (hWND != 0) {
+				if (hWND == tb) {
+					//Taskbar is already animating.
+					return;
+				}
+				else {
+					animating_List[animating_Count] = hWND;
+					animating_Count += 1;
+					break;
+				}
+			}
+		}
+
+
+		std::wcout << animating_Count << std::endl;
+
+
 		INT curDPI = GetDpiForWindow(hWND) * 1.041666666666667;
 		HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 		RECT currenttbrect;
@@ -296,7 +318,10 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		int right = abs(currenttbrect.right * curDPI / 100);
 		int bottom = newtbrect.bottom;
 
+		
+
 		for (;;) {
+			
 			int currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 			if (left == newtbrect.left) {
@@ -382,8 +407,27 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		right = NULL;
 		bottom = NULL;
 
+		int tbid = 0;
+
+		//Free the current taskbar so it can be animated again.
+		for (HWND tb : animating_List) {
+			if (hWND != 0) {
+				if (hWND == tb) {
+					animating_List[tbid] = 0;
+					animating_Count -= 1;
+					break;
+				}
+			}
+			tbid += 1;
+		}
+
+		tbid = NULL;
+
+
 		return;
 	}
+
+
 	catch (...) { SetWindowRgn(hWND, region, TRUE); }
 }
 
@@ -395,7 +439,7 @@ void taskbarLoop() {
 	}
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	FreeConsole();
 
@@ -585,6 +629,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	EnumWindows(EnumCallbackTaskbars, NULL);
 
+	//Initilize animating list
+	animating_Count = 0;
+	animating_List[0] = 0;
+	animating_List[1] = 0;
+	animating_List[2] = 0;
+	animating_List[3] = 0;
+	animating_List[4] = 0;
+	animating_List[5] = 0;
+	animating_List[6] = 0;
+	animating_List[7] = 0;
+	animating_List[8] = 0;
+	animating_List[9] = 0;
+
 	if (stop == 1) {
 		exiting();
 	}
@@ -703,7 +760,7 @@ void SetTaskbar() {
 
 		for (HWND tb : taskbar_List) {
 			if (tb != 0) {
-				int taskbariscenter;
+				int taskbariscenter = 1;
 
 				HKEY hKey;
 				DWORD buffer;
@@ -739,6 +796,7 @@ void SetTaskbar() {
 				curreg_Check_handle = NULL;
 				curreg_Check_region = NULL;
 
+			
 				int length = 256;
 				wchar_t* title = new wchar_t[length];
 				GetClassName(tb, title, length);
@@ -746,6 +804,7 @@ void SetTaskbar() {
 				// Check if hWid is still valid if not find again
 				if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
 					free(title);
+				
 					std::wcout << "hWID invalid!" << std::endl;
 
 					HWND Explorer = NULL;
@@ -796,7 +855,8 @@ void SetTaskbar() {
 
 				// This is the main taskbar
 				if (wcscmp(title, L"Shell_TrayWnd") == 0) {
-					free(title);
+					
+					
 					HWND Shell_TrayWnd = tb;
 					HWND Start = FindWindowEx(Shell_TrayWnd, 0, L"Start", NULL);
 					HWND DesktopWindowContentBridge = FindWindowEx(Shell_TrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
@@ -964,6 +1024,23 @@ void SetTaskbar() {
 					top = NULL;
 					region_ShellTrayWnd = NULL;
 					region_TrayNotifyWnd = NULL;
+					DesktopWindowContentBridge = NULL;
+					ToolbarWindow32 = NULL;
+					SysPager = NULL;
+					Button = NULL;
+
+
+					free(Shell_TrayWnd);
+					free(Start);
+					free(RebarWindow32);
+					free(MSTaskSwWClass);
+					free(TrayNotifyWnd);
+					free(DesktopWindowContentBridge);
+				    free(ToolbarWindow32);
+					free(SysPager);
+					free(Button);
+
+					free(title);
 
 					if (oldMaxCount != maximized_Count) {
 						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
@@ -974,7 +1051,8 @@ void SetTaskbar() {
 
 				// This is a secondary taskbar
 				if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
-					free(title);
+					
+					
 					HWND Shell_SecondaryTrayWnd = tb;
 					//HWND Start = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Start", NULL);
 					HWND WorkerW = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"WorkerW", NULL);
@@ -1087,10 +1165,22 @@ void SetTaskbar() {
 					curDPI = NULL;
 					width_Shell_SecondaryTrayWnd = NULL;
 					height_Shell_SecondaryTrayWnd = NULL;
+					DesktopWindowContentBridge = NULL;
+
+					free(WorkerW);
+					free(Shell_SecondaryTrayWnd);
+					free(MSTaskListWClass);
+					free(DesktopWindowContentBridge);
+
+				free(title);
+					
+					if (oldMaxCount != maximized_Count) {
+						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
+					}
 
 					staskbar_Revert = 0;
 				} //end secondary taskbar
-				title = NULL;
+				//title = NULL;
 			}
 		}
 
