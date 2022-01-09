@@ -22,6 +22,13 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 
 &nbsp;
 
+**Thanks to: ❤️**  
+[@PrincessAkira](https://github.com/PrincessAkira)  
+[@dmitryaleshin](https://github.com/dmitryaleshin)  
+[@officialLennox](https://github.com/officialLennox)  
+
+&nbsp;
+
 **Screenshots**
 <img width="1920" alt="Untitled" src="https://user-images.githubusercontent.com/50437199/147857018-9de30327-9f5c-48c6-ab52-9ed7afefb070.png">
 <img width="1920" alt="Untitled" src="https://user-images.githubusercontent.com/50437199/147869295-0736389b-95cd-4875-9ab0-cdce03df22b7.jpg">
