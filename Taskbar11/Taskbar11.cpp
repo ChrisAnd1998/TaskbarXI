@@ -62,6 +62,7 @@ int ignoremax;
 int notray;
 int hidetraywnd;
 int stop;
+int restart;
 int createstartup;
 int removestartup;
 int sticky;
@@ -470,6 +471,10 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			stop = 1;
 			//cur_cmd.append(" -stop");
 		}
+		if (wcscmp(szArgList[i], L"-restart") == 0) {
+			restart = 1;
+			//cur_cmd.append(" -stop");
+		}
 		if (wcscmp(szArgList[i], L"-square") == 0) {
 			square = 1;
 			cur_cmd.append(" -square");
@@ -648,12 +653,13 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 		//GetWindowRect(tb, &rect_tb);
 
 		//INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
-	
-		HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
-		SetWindowRgn(tb, region_Empty, FALSE);
+		if (restart == 0) {
+			HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
+			SetWindowRgn(tb, region_Empty, FALSE);
+		}
 
 		SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
-	
+
 		//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 	}
 
@@ -737,10 +743,10 @@ void SetTaskbar() {
 			std::string quote(chars.begin(), chars.end());
 
 			if (isstore == 1) {
-				WinExec(("Explorer.exe taskbarxi:" + cur_cmd).c_str(), SW_HIDE);
+				WinExec(("Explorer.exe taskbarxi: -restart " + cur_cmd).c_str(), SW_HIDE);
 			}
 			else {
-				WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
+				WinExec((quote + cur_dir + quote + " -restart " + cur_cmd).c_str(), SW_HIDE);
 			}
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -833,10 +839,10 @@ void SetTaskbar() {
 					std::string quote(chars.begin(), chars.end());
 
 					if (isstore == 1) {
-						WinExec(("Explorer.exe taskbarxi:" + cur_cmd).c_str(), SW_HIDE);
+						WinExec(("Explorer.exe taskbarxi: -restart " + cur_cmd).c_str(), SW_HIDE);
 					}
 					else {
-						WinExec((quote + cur_dir + quote + cur_cmd).c_str(), SW_HIDE);
+						WinExec((quote + cur_dir + quote + " -restart " + cur_cmd).c_str(), SW_HIDE);
 					}
 
 					std::this_thread::sleep_for(std::chrono::milliseconds(500));
