@@ -551,6 +551,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			std::wcout << "PARAMETERS:" << std::endl;
 			std::wcout << "-help				(Shows this window)" << std::endl;
 			std::wcout << "-stop				(Stops TaskbarXI and reverts the taskbar to default)" << std::endl;
+			std::wcout << "-restart				(Does not refresh the taskbar region when starting)" << std::endl;
 			std::wcout << "-square				(Uses square corners instead of rounded corners)" << std::endl;
 			std::wcout << "-radius <radius>		(Define the corner radius you want to be used)" << std::endl;
 			std::wcout << "-ignoremax			(Does not revert the taskbar on maximized window)" << std::endl;
