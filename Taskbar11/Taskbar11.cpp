@@ -29,9 +29,11 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam);
 BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam);
 BOOL CALLBACK EnumCallbackInstances(HWND hWND, LPARAM lParam);
 
+std::thread thread_List[10];
 HWND animating_List[10];
 HWND maximized_List[10];
 HWND taskbar_List[10];
+int thread_Count;
 int animating_Count;
 int taskbar_Count;
 int maximized_Count;
@@ -117,7 +119,6 @@ void SetWindowBlur()
 
 VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
-
 	if (eventtrigger == 0) {
 		if (working == 0) {
 			eventtrigger = 1;
@@ -270,24 +271,10 @@ HRESULT UpdateWindows11RoundCorners(HWND hWnd)
 	return E_FAIL;
 }
 
+std::string animating;
+
 void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 	try {
-		//Make sure taskbar does not get multiple times at once.
-		//for (HWND tb : animating_List) {
-		//	if (hWND != 0) {
-		//		if (hWND == tb) {
-		//			//Taskbar is already animating.
-		//			//SetWindowRgn(hWND, region, TRUE);
-		//			return;
-		//		}
-		//		else {
-		//			animating_List[animating_Count] = hWND;
-		//			animating_Count += 1;
-		//			break;
-		//		}
-		//	}
-		//}
-
 		INT curDPI = GetDpiForWindow(hWND) * 1.041666666666667;
 		HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 		RECT currenttbrect;
@@ -435,17 +422,15 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 				framereg = NULL;
 			}
 
-			
-
 			currentTime = NULL;
 		}
 
 		SetWindowRgn(hWND, region, TRUE);
 
 		SendMessage(hWND, WM_WINDOWPOSCHANGED, TRUE, 0);
-	     SendMessage(hWND, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
+		SendMessage(hWND, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
 
-		 SetWindowRgn(hWND, region, TRUE);
+		SetWindowRgn(hWND, region, TRUE);
 
 		curDPI = NULL;
 		currenttbreg = NULL;
@@ -454,23 +439,6 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 		top = NULL;
 		right = NULL;
 		bottom = NULL;
-
-		//int tbid = 0;
-
-		//Free the current taskbar so it can be animated again.
-		//for (HWND tb : animating_List) {
-		//	std::wcout << tb << std::endl;
-		//	if (hWND != 0) {
-		//		if (hWND == tb) {
-		//			animating_List[tbid] = 0;
-		//			animating_Count -= 1;
-		//			break;
-		//		}
-		//	}
-		//	tbid += 1;
-		//}
-		//
-		//tbid = NULL;
 
 		return;
 	}
@@ -485,8 +453,6 @@ void taskbarLoop() {
 		callSetTaskbar();
 	}
 }
-
-
 
 int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -599,8 +565,6 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 	}
 
 	LocalFree(szArgList);
-	
-
 
 	if (corner_Radius == 0) {
 		corner_Radius = 15;
@@ -631,8 +595,6 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 	std::wcout << "Explorer found!" << std::endl;
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-	
 
 	//Setup Notifyicon
 	MSG msg;
@@ -681,25 +643,19 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 	EnumWindows(EnumCallbackTaskbars, NULL);
 
-
 	for (HWND tb : taskbar_List) {
+		//RECT rect_tb;
+		//GetWindowRect(tb, &rect_tb);
 
-		RECT rect_tb;
-		GetWindowRect(tb, &rect_tb);
-
-		INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
-
-		HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
-		SetWindowRgn(tb, region_Empty, TRUE);
+		//INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
+	
+		HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
+		SetWindowRgn(tb, region_Empty, FALSE);
 
 		SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
+	
 		//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 	}
-
-
-
-
-
 
 	//Initilize animating list
 	animating_Count = 0;
@@ -738,8 +694,6 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 	std::atexit(exiting);
 
 	std::thread{ taskbarLoop }.detach();
-
-	
 
 	for (;;) {
 		//GetMessage() blocks until there is a message available to retrieve. If you don't want to wait, then use PeekMessage() instead.
@@ -840,13 +794,17 @@ void SetTaskbar() {
 				curreg_Check_handle = NULL;
 				curreg_Check_region = NULL;
 
-				int length = 256;
-				wchar_t* title = new wchar_t[length];
-				GetClassName(tb, title, length);
+				//int length = 256;
+				//wchar_t* title = new wchar_t[length];
+				//GetClassName(tb, title, length);
+
+				HWND isataskbar = FindWindowEx(tb, 0, L"Start", NULL); //All Taskbars have a Start button
+				HWND isprimarytaskbar = FindWindowEx(tb, 0, L"RebarWindow32", NULL); //Only the primary taskbar has a RebarWindow32
 
 				// Check if hWid is still valid if not find again
-				if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
-					free(title);
+				//if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
+				if (isataskbar == 0) {
+					//free(title);
 
 					std::wcout << "hWID invalid!" << std::endl;
 
@@ -887,8 +845,12 @@ void SetTaskbar() {
 					abort;
 				}
 
+				thread_Count = 0;
+				ZeroMemory(&thread_List, sizeof(thread_List));
+
 				// This is the main taskbar
-				if (wcscmp(title, L"Shell_TrayWnd") == 0) {
+				//if (wcscmp(title, L"Shell_TrayWnd") == 0) {
+				if (isataskbar != 0 && isprimarytaskbar != 0) {
 					HWND Shell_TrayWnd = tb;
 					HWND Start = FindWindowEx(Shell_TrayWnd, 0, L"Start", NULL);
 					HWND DesktopWindowContentBridge = FindWindowEx(Shell_TrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
@@ -1015,7 +977,7 @@ void SetTaskbar() {
 							HMONITOR tbm1 = MonitorFromWindow(Shell_TrayWnd, MONITOR_DEFAULTTONEAREST);
 							HMONITOR wm1 = MonitorFromWindow(mx1, MONITOR_DEFAULTTONEAREST);
 							if (tbm1 == wm1) {
-								std::wcout << title << " @ " << Shell_TrayWnd << " has a maximized window!" << std::endl;
+								std::wcout << Shell_TrayWnd << " @ " << "Shell_TrayWnd" << " has a maximized window!" << std::endl;
 								HRGN region_Empty = CreateRectRgn(abs(rect_Shell_TrayWnd.left - rect_Shell_TrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_TrayWnd.right - rect_Shell_TrayWnd.left) * curDPI / 100, rect_Shell_TrayWnd.bottom * curDPI / 100);
 								SetWindowRgn(Shell_TrayWnd, region_Empty, TRUE);
 								mtaskbar_Revert = 1;
@@ -1047,7 +1009,11 @@ void SetTaskbar() {
 								SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 							}
 							else {
-								std::thread{ SetWindowRegionAnimated, Shell_TrayWnd, region_Both }.detach();
+								//std::thread{ SetWindowRegionAnimated, Shell_TrayWnd, region_Both }.detach();
+								//SetWindowRegionAnimated(Shell_TrayWnd, region_Both);
+
+								thread_List[thread_Count] = std::thread(SetWindowRegionAnimated, Shell_TrayWnd, region_Both);
+								thread_Count += 1;
 							}
 						}
 						else {
@@ -1055,14 +1021,14 @@ void SetTaskbar() {
 								SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 							}
 							else {
-								std::wcout << title << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
+								std::wcout << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
 							}
 						}
 
 						region_Both = NULL;
 					}
 
-					std::wcout << "Done with " << title << " @ " << Shell_TrayWnd << std::endl;
+					std::wcout << "Done with " << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << std::endl;
 
 					// dispose
 					Shell_TrayWnd = NULL;
@@ -1094,7 +1060,7 @@ void SetTaskbar() {
 					free(SysPager);
 					free(Button);
 
-					free(title);
+					//free(title);
 
 					if (oldMaxCount != maximized_Count) {
 						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
@@ -1104,7 +1070,8 @@ void SetTaskbar() {
 				} //end primary taskbar
 
 				// This is a secondary taskbar
-				if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
+				//if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
+				if (isprimarytaskbar == 0) {
 					HWND Shell_SecondaryTrayWnd = tb;
 					//HWND Start = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Start", NULL);
 					HWND WorkerW = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"WorkerW", NULL);
@@ -1195,7 +1162,7 @@ void SetTaskbar() {
 							HMONITOR tbm2 = MonitorFromWindow(Shell_SecondaryTrayWnd, MONITOR_DEFAULTTONEAREST);
 							HMONITOR wm2 = MonitorFromWindow(mx2, MONITOR_DEFAULTTONEAREST);
 							if (tbm2 == wm2) {
-								std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " has a maximized window!" << std::endl;
+								std::wcout << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << " has a maximized window!" << std::endl;
 								HRGN region_Empty = CreateRectRgn(abs(rect_Shell_SecondaryTrayWnd.left - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, 0, abs(rect_Shell_SecondaryTrayWnd.right - rect_Shell_SecondaryTrayWnd.left) * curDPI / 100, rect_Shell_SecondaryTrayWnd.bottom * curDPI / 100);
 								SetWindowRgn(Shell_SecondaryTrayWnd, region_Empty, TRUE);
 								staskbar_Revert = 1;
@@ -1214,15 +1181,20 @@ void SetTaskbar() {
 							}
 							else {
 								std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
+
+								thread_List[thread_Count] = std::thread(SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd);
+								thread_Count += 1;
+
+								//SetWindowRegionAnimated(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd);
 							}
 						}
 						else {
-							std::wcout << title << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
+							std::wcout << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
 						}
 						region_Shell_SecondaryTrayWnd = NULL;
 					}
 
-					std::wcout << "Done with " << title << " @ " << Shell_SecondaryTrayWnd << std::endl;
+					std::wcout << "Done with " << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << std::endl;
 
 					// dispose
 					left = NULL;
@@ -1244,7 +1216,7 @@ void SetTaskbar() {
 					free(MSTaskListWClass);
 					free(DesktopWindowContentBridge);
 
-					free(title);
+					//free(title);
 
 					if (oldMaxCount != maximized_Count) {
 						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
@@ -1257,32 +1229,41 @@ void SetTaskbar() {
 		}
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+		for (std::thread& th : thread_List) {
+			th.join();
+		}
+
 		working = 0;
 	}
 	catch (...) {}
 }
 
 BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
-	int length = 256;
-	wchar_t* title = new wchar_t[length];
+	//int length = 256;
+	//wchar_t* title = new wchar_t[length];
+	//GetClassName(hWND, title, length);
 
-	GetClassName(hWND, title, length);
+	HWND isataskbar = FindWindowEx(hWND, 0, L"Start", NULL); //All Taskbars have a Start button
+	HWND isprimarytaskbar = FindWindowEx(hWND, 0, L"RebarWindow32", NULL); //Only the primary taskbar has a RebarWindow32
 
-	if (wcscmp(title, L"Shell_TrayWnd") == 0) {
+	//if (wcscmp(title, L"Shell_TrayWnd") == 0) {
+	if (isataskbar != 0 && isprimarytaskbar != 0) {
 		std::wcout << "Main taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
 	}
 
-	if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
+	//if (wcscmp(title, L"Shell_SecondaryTrayWnd") == 0) {
+	if (isataskbar != 0 && isprimarytaskbar == 0) {
 		std::wcout << "A Secondary taskbar found! @ hWid : " << hWND << std::endl;
 		taskbar_List[taskbar_Count] = hWND;
 		taskbar_Count += 1;
 	}
 
 	hWND = NULL;
-	title = NULL;
-	length = NULL;
+	//title = NULL;
+	//length = NULL;
 
 	return true;
 }
