@@ -68,6 +68,8 @@ int removestartup;
 int sticky;
 int smoothresize;
 int blur;
+int expandspeed;
+int shrinkspeed;
 
 const HINSTANCE hModule = LoadLibrary(TEXT("user32.dll"));
 
@@ -106,9 +108,23 @@ void SetWindowBlur()
 			for (;;) {
 				for (HWND tb : taskbar_List) {
 					if (tb != 0) {
+						//SendMessage(tb, WM_SETREDRAW, 0x0, 0x0);
+						//std::this_thread::sleep_for(std::chrono::milliseconds(5));
+						//SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, 0x0, 0x0);
+						//std::this_thread::sleep_for(std::chrono::milliseconds(5));
 						ACCENTPOLICY policy = { 3, 0, 0, 0 };
 						WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) };
 						SetWindowCompositionAttribute(tb, &data);
+						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE560);
+						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE560);
+						//std::this_thread::sleep_for(std::chrono::milliseconds(5));
+						//SendMessage(tb, WM_SETREDRAW, 0x1, 0x0);
+
+						//SendMessage(tb, WM_USER + 377, 0x0, 0x0);
+						//PostMessage(tb, WM_USER + 443, 0x1, 0x0);
+
+						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE6A0);
+						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE6A0);
 					}
 				}
 
@@ -382,9 +398,9 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			if (makebigger == 1) {
 				for (;;) {
 					int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-					int speed = 90;
+					int speed = expandspeed;
 					if (taskbariscenter == 0) {
-						speed = 10;
+						speed = expandspeed / 12;
 					}
 					if (elapsed >= speed / curDPI) {
 						//SetWindowRgn(hWND, region, TRUE);
@@ -398,9 +414,9 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			else {
 				for (;;) {
 					int elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) - currentTime;
-					int speed = 750;
+					int speed = shrinkspeed;
 					if (taskbariscenter == 0) {
-						speed = 50;
+						speed = shrinkspeed / 12;
 					}
 					if (elapsed >= speed / curDPI) {
 						//SetWindowRgn(hWND, region, TRUE);
@@ -503,6 +519,15 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			smoothresize = 1;
 			cur_cmd.append(" -smoothresize");
 		}
+		if (wcscmp(szArgList[i], L"-expandspeed") == 0) {
+			expandspeed = _wtoi(szArgList[++i]);
+			cur_cmd.append(" -expandspeed " + expandspeed);
+		}
+		if (wcscmp(szArgList[i], L"-shrinkspeed") == 0) {
+			shrinkspeed = _wtoi(szArgList[++i]);
+			cur_cmd.append(" -shrinkspeed " + shrinkspeed);
+		}
+
 		if (wcscmp(szArgList[i], L"-blur") == 0) {
 			blur = 1;
 			cur_cmd.append(" -blur");
@@ -562,6 +587,8 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			std::wcout << "-console			(Displays a console window)" << std::endl;
 			std::wcout << "-sticky				(Sticks the system tray to the taskbar (removes the tray icons to keep it stable))" << std::endl;
 			std::wcout << "-smoothresize				(Resizes the taskbar smoothly)" << std::endl;
+			std::wcout << "-expandspeed <speed>		(Define the speed you want to be used for the expand animation (default: 90))" << std::endl;
+			std::wcout << "-shrinkspeed <speed>		(Define the speed you want to be used for the shrink animation (default: 700))" << std::endl;
 			std::wcout << "-blur				(Makes the taskbar blurred)" << std::endl;
 			std::wcout << "" << std::endl;
 			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -square";
@@ -574,6 +601,14 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 	if (corner_Radius == 0) {
 		corner_Radius = 15;
+	}
+
+	if (expandspeed == 0) {
+		expandspeed = 90;
+	}
+
+	if (shrinkspeed == 0) {
+		shrinkspeed = 700;
 	}
 
 	EnumWindows(EnumCallbackInstances, NULL);
@@ -756,8 +791,6 @@ void SetTaskbar() {
 		}
 
 		std::wcout << "Clearing maximized window list..." << std::endl;
-
-		oldMaxCount = maximized_Count;
 
 		maxCountChanged = 0;
 		maximized_Count = 0;
@@ -1069,10 +1102,6 @@ void SetTaskbar() {
 
 					//free(title);
 
-					if (oldMaxCount != maximized_Count) {
-						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
-					}
-
 					mtaskbar_Revert = 0;
 				} //end primary taskbar
 
@@ -1225,10 +1254,6 @@ void SetTaskbar() {
 
 					//free(title);
 
-					if (oldMaxCount != maximized_Count) {
-						SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, TRUE, NULL);
-					}
-
 					staskbar_Revert = 0;
 				} //end secondary taskbar
 				//title = NULL;
@@ -1297,6 +1322,8 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
 			}
 		}
 	}
+
+	oldMaxCount = maximized_Count;
 
 	wp.length = NULL;
 	wl = NULL;
