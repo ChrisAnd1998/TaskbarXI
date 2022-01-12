@@ -105,30 +105,18 @@ void SetWindowBlur()
 	{
 		if (SetWindowCompositionAttribute)
 		{
+			ACCENTPOLICY policy = { 3, 0, 0, 0 };
+			WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) };
 			for (;;) {
 				for (HWND tb : taskbar_List) {
 					if (tb != 0) {
-						//SendMessage(tb, WM_SETREDRAW, 0x0, 0x0);
-						//std::this_thread::sleep_for(std::chrono::milliseconds(5));
-						//SendMessage(tb, WM_DWMCOMPOSITIONCHANGED, 0x0, 0x0);
-						//std::this_thread::sleep_for(std::chrono::milliseconds(5));
-						ACCENTPOLICY policy = { 3, 0, 0, 0 };
-						WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) };
 						SetWindowCompositionAttribute(tb, &data);
-						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE560);
-						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE560);
-						//std::this_thread::sleep_for(std::chrono::milliseconds(5));
-						//SendMessage(tb, WM_SETREDRAW, 0x1, 0x0);
-
-						//SendMessage(tb, WM_USER + 377, 0x0, 0x0);
-						//PostMessage(tb, WM_USER + 443, 0x1, 0x0);
-
-						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE6A0);
-						//SendMessage(tb, WM_NOTIFY, 0x0000A005, 0x03CBE6A0);
 					}
 				}
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(14));
+
+
 			}
 		}
 	}
@@ -136,6 +124,7 @@ void SetWindowBlur()
 
 VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
+	
 	if (eventtrigger == 0) {
 		if (working == 0) {
 			eventtrigger = 1;
@@ -591,7 +580,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			std::wcout << "-shrinkspeed <speed>		(Define the speed you want to be used for the shrink animation (default: 700))" << std::endl;
 			std::wcout << "-blur				(Makes the taskbar blurred)" << std::endl;
 			std::wcout << "" << std::endl;
-			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -square";
+			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -expandspeed 100 -square ";
 
 			FreeConsole();
 		}
@@ -902,9 +891,9 @@ void SetTaskbar() {
 					HWND ToolbarWindow32 = FindWindowEx(TrayNotifyWnd, 0, L"ToolbarWindow32", NULL);
 					HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
 
-					SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
+					//SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
 
-					SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
+					//SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1053,7 +1042,13 @@ void SetTaskbar() {
 								//SetWindowRegionAnimated(Shell_TrayWnd, region_Both);
 
 								thread_List[thread_Count] = std::thread(SetWindowRegionAnimated, Shell_TrayWnd, region_Both);
+								//thread_List[thread_Count] = 1;
+								//
 								thread_Count += 1;
+								//std::thread th(SetWindowRegionAnimated, Shell_TrayWnd, region_Both);
+								//th.join();
+
+
 							}
 						}
 						else {
@@ -1114,9 +1109,9 @@ void SetTaskbar() {
 					HWND DesktopWindowContentBridge = FindWindowEx(Shell_SecondaryTrayWnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", NULL);
 					HWND MSTaskListWClass = FindWindowEx(WorkerW, 0, L"MSTaskListWClass", NULL);
 
-					SendMessage(Shell_SecondaryTrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
+					//SendMessage(Shell_SecondaryTrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
 
-					SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
+					//SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1216,9 +1211,12 @@ void SetTaskbar() {
 								SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
 							}
 							else {
-								std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
+							//	std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
 
-								thread_List[thread_Count] = std::thread(SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd);
+								//thread_List[thread_Count] = 
+								
+								thread_List[thread_Count] =  std::thread (SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd);
+								//th.join();
 								thread_Count += 1;
 
 								//SetWindowRegionAnimated(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd);
@@ -1260,11 +1258,17 @@ void SetTaskbar() {
 			}
 		}
 
-		//std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
+
+		
 		for (std::thread& th : thread_List) {
-			th.join();
+			if (th.joinable() == TRUE) {
+				th.join();
+			}
 		}
+
+
 
 		working = 0;
 	}
@@ -1322,6 +1326,15 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
 			}
 		}
 	}
+
+	//if (oldMaxCount != maximized_Count) {
+	//	for (HWND tb : taskbar_List) {
+	//		if (tb != 0) {}
+	//	}
+	//
+	//	HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
+	//							SetWindowRgn(tb, region_Empty, FALSE);
+	//}
 
 	oldMaxCount = maximized_Count;
 
