@@ -166,6 +166,8 @@ void exiting() {
 
 			HWND RebarWindow32 = FindWindowEx(tb, 0, L"RebarWindow32", NULL);
 			HWND WorkerW = FindWindowEx(tb, 0, L"WorkerW", NULL);
+			HWND MSTaskSwWClass = FindWindowEx(tb, 0, L"MSTaskSwWClass", NULL);
+			HWND MSTaskListWClass = FindWindowEx(tb, 0, L"MSTaskListWClass", NULL);
 
 			if (RebarWindow32 != 0) {
 				SendMessage(RebarWindow32, WM_SETREDRAW, TRUE, NULL);
@@ -174,6 +176,16 @@ void exiting() {
 			if (WorkerW != 0) {
 				SendMessage(WorkerW, WM_SETREDRAW, TRUE, NULL);
 			}
+
+			if (MSTaskSwWClass != 0) {
+				SendMessage(MSTaskSwWClass, WM_SETREDRAW, TRUE, NULL);
+			}
+
+			if (MSTaskListWClass != 0) {
+				SendMessage(MSTaskListWClass, WM_SETREDRAW, TRUE, NULL);
+			}
+
+			
 			
 
 			ShowWindow(ToolbarWindow32, SW_SHOW);
@@ -906,8 +918,9 @@ void SetTaskbar() {
 					//SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
 					//PostMessage(tb, WM_DWMCOLORIZATIONCOLORCHANGED, NULL, NULL);
 					//SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
-					
 					SendMessage(RebarWindow32, WM_SETREDRAW, FALSE, NULL);
+					SendMessage(MSTaskSwWClass, WM_SETREDRAW, FALSE, NULL);
+					
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1128,7 +1141,7 @@ void SetTaskbar() {
 					//SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
 
 					SendMessage(WorkerW, WM_SETREDRAW, FALSE, NULL);
-
+					SendMessage(MSTaskListWClass, WM_SETREDRAW, FALSE, NULL);
 
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
