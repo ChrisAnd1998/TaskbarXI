@@ -45,8 +45,7 @@ jobs:
         path: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI.exe
         
     - name: Zip Files
-        
-    - uses: vimtor/action-zip@v1
+      uses: vimtor/action-zip@v1
       with:
         files: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI.exe
         recursive: false
