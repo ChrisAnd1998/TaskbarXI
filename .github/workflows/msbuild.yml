@@ -1,4 +1,4 @@
-name: Buil TaskbarXI
+name: Build TaskbarXI
 
 on:
   push:
