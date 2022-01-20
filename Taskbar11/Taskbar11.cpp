@@ -185,7 +185,7 @@ void exiting() {
 				SendMessage(MSTaskListWClass, WM_SETREDRAW, TRUE, NULL);
 			}
 
-			
+			SendMessage(GetParent(tb), WM_SETREDRAW, FALSE, NULL);
 			
 
 			ShowWindow(ToolbarWindow32, SW_SHOW);
@@ -920,7 +920,7 @@ void SetTaskbar() {
 					//SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
 					SendMessage(RebarWindow32, WM_SETREDRAW, FALSE, NULL);
 					SendMessage(MSTaskSwWClass, WM_SETREDRAW, FALSE, NULL);
-					
+					SendMessage(GetParent(tb), WM_SETREDRAW, FALSE, NULL);
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1142,7 +1142,7 @@ void SetTaskbar() {
 
 					SendMessage(WorkerW, WM_SETREDRAW, FALSE, NULL);
 					SendMessage(MSTaskListWClass, WM_SETREDRAW, FALSE, NULL);
-
+					SendMessage(GetParent(tb), WM_SETREDRAW, FALSE, NULL);
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
