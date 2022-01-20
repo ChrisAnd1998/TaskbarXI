@@ -39,10 +39,6 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m ${{env.SOLUTION_FILE_PATH}} /p:Configuration=Release
-      
-    - uses: actions/upload-artifact@v2
-      with:
-        path: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI.exe
         
     - name: Zip Files
       uses: vimtor/action-zip@v1
