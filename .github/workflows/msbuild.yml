@@ -1,4 +1,4 @@
-name: MSBuild
+name: Buil TaskbarXI
 
 on:
   push:
@@ -42,4 +42,4 @@ jobs:
       
     - uses: actions/upload-artifact@v2
       with:
-        path: /Release/TaskbarXI.exe
+        path: ./Release/TaskbarXI.exe
