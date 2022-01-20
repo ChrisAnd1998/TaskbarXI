@@ -51,7 +51,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ github.workspace }}/TaskbarXI_Nightly.zip
+        file: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI_Nightly.zip
         asset_name: TaskbarXI_Nightly.zip
         tag: ${{ github.ref }}
         overwrite: true
