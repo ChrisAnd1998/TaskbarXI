@@ -19,10 +19,6 @@ jobs:
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Update Version Hash
-      run: |
-        "c:/Program Files/Git/usr/bin/sed" -i "s/^\(.\+\)[0-9a-f]\{8\}\(.\+\)$/\1%GITHUB_SHA:~0,8%\2/gm" ./src/VersionRev.h ./metapath/src/VersionRev.h
         
     - name: Install v143 Toolset
       shell: powershell
@@ -43,3 +39,7 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m ${{env.SOLUTION_FILE_PATH}} /p:Configuration=Release
+      
+    - uses: actions/upload-artifact@v2
+      with:
+        path: Release\TaskbarXI.exe
