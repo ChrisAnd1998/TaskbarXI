@@ -33,19 +33,13 @@ jobs:
         } else {
             Write-Host "components were not installed"
         }
-
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m ${{env.SOLUTION_FILE_PATH}} /p:Configuration=Release
-        
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
+      
+    - uses: actions/upload-artifact@v2
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: TaskbarXI.exe
-        asset_name: TaskbarXI_Nightly.exe
-        tag: ${{ github.ref }}
-        overwrite: true
-        body: "Compiled after latest Commit"
+        path: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI.exe
+        name: TaskbarXI_nightly.exe
