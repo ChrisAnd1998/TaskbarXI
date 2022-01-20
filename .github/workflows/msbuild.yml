@@ -42,4 +42,4 @@ jobs:
       
     - uses: actions/upload-artifact@v2
       with:
-        path: ./Release/TaskbarXI.exe
+        path: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI.exe
