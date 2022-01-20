@@ -111,20 +111,20 @@ void SetWindowBlur()
 				for (HWND tb : taskbar_List) {
 					if (tb != 0) {
 						SetWindowCompositionAttribute(tb, &data);
+						
 					}
 				}
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(14));
-
-
 			}
 		}
 	}
 }
 
+
+
 VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
-	
 	if (eventtrigger == 0) {
 		if (working == 0) {
 			eventtrigger = 1;
@@ -163,6 +163,18 @@ void exiting() {
 			HWND SysPager = FindWindowEx(TrayNotifyWnd, 0, L"SysPager", NULL);
 			HWND ToolbarWindow32 = FindWindowEx(TrayNotifyWnd, 0, L"ToolbarWindow32", NULL);
 			HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
+
+			HWND RebarWindow32 = FindWindowEx(tb, 0, L"RebarWindow32", NULL);
+			HWND WorkerW = FindWindowEx(tb, 0, L"WorkerW", NULL);
+
+			if (RebarWindow32 != 0) {
+				SendMessage(RebarWindow32, WM_SETREDRAW, TRUE, NULL);
+			}
+
+			if (WorkerW != 0) {
+				SendMessage(WorkerW, WM_SETREDRAW, TRUE, NULL);
+			}
+			
 
 			ShowWindow(ToolbarWindow32, SW_SHOW);
 			ShowWindow(SysPager, SW_SHOW);
@@ -892,8 +904,10 @@ void SetTaskbar() {
 					HWND Button = FindWindowEx(TrayNotifyWnd, 0, L"Button", NULL);
 
 					//SendMessage(Shell_TrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
-
+					//PostMessage(tb, WM_DWMCOLORIZATIONCOLORCHANGED, NULL, NULL);
 					//SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
+					
+					SendMessage(RebarWindow32, WM_SETREDRAW, FALSE, NULL);
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1047,8 +1061,6 @@ void SetTaskbar() {
 								thread_Count += 1;
 								//std::thread th(SetWindowRegionAnimated, Shell_TrayWnd, region_Both);
 								//th.join();
-
-
 							}
 						}
 						else {
@@ -1111,7 +1123,13 @@ void SetTaskbar() {
 
 					//SendMessage(Shell_SecondaryTrayWnd, WM_WINDOWPOSCHANGED, TRUE, 0);
 
+					//PostMessage(tb, WM_DWMCOLORIZATIONCOLORCHANGED, NULL, NULL);
+
 					//SendMessage(tb, WM_PARENTNOTIFY, 0x00000201, 0x0039065A);
+
+					SendMessage(WorkerW, WM_SETREDRAW, FALSE, NULL);
+
+
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1211,11 +1229,11 @@ void SetTaskbar() {
 								SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
 							}
 							else {
-							//	std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
+								//	std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
 
-								//thread_List[thread_Count] = 
-								
-								thread_List[thread_Count] =  std::thread (SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd);
+									//thread_List[thread_Count] =
+
+								thread_List[thread_Count] = std::thread(SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd);
 								//th.join();
 								thread_Count += 1;
 
@@ -1260,15 +1278,11 @@ void SetTaskbar() {
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-
-		
 		for (std::thread& th : thread_List) {
 			if (th.joinable() == TRUE) {
 				th.join();
 			}
 		}
-
-
 
 		working = 0;
 	}
@@ -1305,6 +1319,7 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 }
 
 BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
+
 	WINDOWPLACEMENT wp;
 	GetWindowPlacement(hWND, &wp);
 	INT wl = GetWindowLong(hWND, GWL_STYLE);
@@ -1327,10 +1342,14 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
 		}
 	}
 
-	//if (oldMaxCount != maximized_Count) {
-	//	for (HWND tb : taskbar_List) {
-	//		if (tb != 0) {}
-	//	}
+//	if (oldMaxCount != maximized_Count) {
+//		for (HWND tb : taskbar_List) {
+//			if (tb != 0) {
+//				PostMessage(tb, WM_DWMCOLORIZATIONCOLORCHANGED, NULL, NULL);
+//				//setWindowlong(tb, WS_EX_NOREDIRECTIONBITMAP);
+//			}
+//		}
+//	}
 	//
 	//	HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
 	//							SetWindowRgn(tb, region_Empty, FALSE);
