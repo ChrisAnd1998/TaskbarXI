@@ -12,13 +12,27 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
+      
+    - name: Install v143 Toolset
+      shell: powershell
+      run: |
+        Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+        $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Preview"
+        $WorkLoads = '--add Microsoft.VisualStudio.Component.WinXP --add Microsoft.VisualStudio.Component.VC.Tools.ARM --add Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+        $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"", $WorkLoads, '--quiet', '--norestart', '--nocache')
+        $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+        if ($process.ExitCode -eq 0) {
+            Write-Host "components have been successfully added"
+        } else {
+            Write-Host "components were not installed"
+        }
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -31,4 +45,7 @@ jobs:
       run: msbuild /m ${{env.SOLUTION_FILE_PATH}} /p:Configuration=Release
     
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2.3.1
+    - uses: actions/upload-artifact@v2
+      with:
+          name: TaskbarXI.exe
+          path: 'Release\TaskbarXI.zip'
