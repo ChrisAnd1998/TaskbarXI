@@ -111,7 +111,6 @@ void SetWindowBlur()
 				for (HWND tb : taskbar_List) {
 					if (tb != 0) {
 						SetWindowCompositionAttribute(tb, &data);
-						
 					}
 				}
 
@@ -120,8 +119,6 @@ void SetWindowBlur()
 		}
 	}
 }
-
-
 
 VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
@@ -186,7 +183,6 @@ void exiting() {
 			}
 
 			SendMessage(GetParent(tb), WM_SETREDRAW, FALSE, NULL);
-			
 
 			ShowWindow(ToolbarWindow32, SW_SHOW);
 			ShowWindow(SysPager, SW_SHOW);
@@ -1332,7 +1328,6 @@ BOOL CALLBACK EnumCallbackTaskbars(HWND hWND, LPARAM lParam) {
 }
 
 BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
-
 	WINDOWPLACEMENT wp;
 	GetWindowPlacement(hWND, &wp);
 	INT wl = GetWindowLong(hWND, GWL_STYLE);
@@ -1355,18 +1350,18 @@ BOOL CALLBACK EnumCallbackMaximized(HWND hWND, LPARAM lParam) {
 		}
 	}
 
-//	if (oldMaxCount != maximized_Count) {
-//		for (HWND tb : taskbar_List) {
-//			if (tb != 0) {
-//				PostMessage(tb, WM_DWMCOLORIZATIONCOLORCHANGED, NULL, NULL);
-//				//setWindowlong(tb, WS_EX_NOREDIRECTIONBITMAP);
-//			}
-//		}
-//	}
-	//
-	//	HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
-	//							SetWindowRgn(tb, region_Empty, FALSE);
-	//}
+	//	if (oldMaxCount != maximized_Count) {
+	//		for (HWND tb : taskbar_List) {
+	//			if (tb != 0) {
+	//				PostMessage(tb, WM_DWMCOLORIZATIONCOLORCHANGED, NULL, NULL);
+	//				//setWindowlong(tb, WS_EX_NOREDIRECTIONBITMAP);
+	//			}
+	//		}
+	//	}
+		//
+		//	HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
+		//							SetWindowRgn(tb, region_Empty, FALSE);
+		//}
 
 	oldMaxCount = maximized_Count;
 
