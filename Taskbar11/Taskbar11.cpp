@@ -152,7 +152,7 @@ void exiting() {
 			INT curDPI = GetDpiForWindow(tb) * 1.041666666666667;
 
 			HRGN region_Empty = CreateRectRgn(abs(rect_tb.left - rect_tb.left) * curDPI / 100, 0, abs(rect_tb.right - rect_tb.left) * curDPI / 100, rect_tb.bottom * curDPI / 100);
-			SetWindowRgn(tb, region_Empty, TRUE); 
+			SetWindowRgn(tb, region_Empty, TRUE);
 
 			HWND Shell_TrayWnd = FindWindow(L"Shell_TrayWnd", 0);
 			HWND TrayNotifyWnd = FindWindowEx(Shell_TrayWnd, 0, L"TrayNotifyWnd", NULL);
