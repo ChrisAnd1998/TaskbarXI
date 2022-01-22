@@ -44,10 +44,13 @@ jobs:
         path: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI.exe
         name: TaskbarXI_nightly.exe
       
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@1.0.1.0
+    - name: Upload To Github Release
+      uses: xresloader/upload-to-github-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: D:\a\TaskbarXI\TaskbarXI\Taskbar11\Release\TaskbarXI.exe
-          asset_name: TaskbarXI_nightly.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+        file: "Taskbar11\Release\TaskbarXI.exe"
+        tags: true
+        tag_name: "Nightly"
+        prerelease: true
+        draft: true
