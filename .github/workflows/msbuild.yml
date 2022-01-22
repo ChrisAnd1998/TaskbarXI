@@ -53,4 +53,4 @@ jobs:
         tags: true
         tag_name: "Nightly"
         prerelease: true
-        draft: true
+        update_latest_release: true
