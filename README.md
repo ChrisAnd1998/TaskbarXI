@@ -22,6 +22,32 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 
 &nbsp;
 
+**Parameters**
+* **`-stop`** parameter (Stops TaskbarXI and reverts the taskbar to default)
+* **`-restart`** parameter (Does not refresh the taskbar region when starting)
+* **`-square`** parameter (Uses square corners instead of rounded corners)
+* **`-radius <radius>`** parameter (Define the corner radius you want to be used) <-- @officialLennox
+* **`-ignoremax`** parameter (Does not revert the taskbar on maximized window)
+* **`-notray`** parameter (Disables system tray icon)
+* **`-hidetraywnd`** parameter (Hides the system tray area)
+* **`-createstartup`** parameter (Creates a startup entry including the current parameters)
+* **`-removestartup`** parameter (Removes startup entry and exits TaskbarXI)
+* **`-console`** parameter (Displays a console window)
+* **`-sticky`** parameter (Sticks the system tray to the taskbar (removes the tray icons to keep it stable))
+* **`-help`** parameter (Displays a help window)
+* **`-smoothresize`** parameter (Resizes the taskbar smoothly)
+* **`-expandspeed <speed>`** parameter (Define the speed you want to be used for the expand animation (default: 90))
+* **`-shrinkspeed <speed>`** parameter (Define the speed you want to be used for the shrink animation (default: 700))
+* **`-blur`** parameter (Makes the taskbar blurred) <-- **EXPERIMENTAL**
+
+
+  
+**Example:** `"TaskbarXI.exe" -ignoremax -expandspeed 100 -square`  
+
+
+
+&nbsp;
+
 **Thanks to: ❤️**  
 [@PrincessAkira](https://github.com/PrincessAkira)  
 [@dmitryaleshin](https://github.com/dmitryaleshin)  
