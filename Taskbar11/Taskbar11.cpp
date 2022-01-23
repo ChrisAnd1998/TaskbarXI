@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <thread>
-#include <dwmapi.h> 
+#include <dwmapi.h>
 
 //Notifyicon
 #include <shellapi.h>
@@ -264,7 +264,7 @@ void remove_startup() {
 	LONG createStatus = RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
 	LONG status = RegDeleteValue(hkey, L"TaskbarXI");
 	RegCloseKey(hkey);
-	exit(0);
+	exiting();
 }
 
 HRESULT UpdateWindows11RoundCorners(HWND hWnd)
@@ -555,6 +555,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			//freopen_s(&fpstdin, "CONIN$", "r", stdin);
 			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
 			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+			cur_cmd.append(" -console");
 		}
 		if (wcscmp(szArgList[i], L"-help") == 0) {
 			AllocConsole();
@@ -603,6 +604,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 			std::wcout << "EXAMPLE: TaskbarXI.exe -ignoremax -expandspeed 100 -square ";
 
 			FreeConsole();
+
 		}
 	}
 
@@ -733,6 +735,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 
 	if (removestartup == 1) {
 		remove_startup();
+		exiting();
 	}
 
 	if (blur == 1) {
