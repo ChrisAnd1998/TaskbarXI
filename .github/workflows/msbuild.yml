@@ -52,7 +52,7 @@ jobs:
         file: "Taskbar11/Release/TaskbarXI.exe"
         tags: true
         overwrite: true
-        tag_name: "Nightly"
+        tag_name: "1.0.0.0"
         prerelease: false
         draft: false
         update_latest_release: true
