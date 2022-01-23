@@ -52,7 +52,7 @@ jobs:
         file: "Taskbar11/Release/TaskbarXI.exe"
         tags: false
         overwrite: true
-        tag_name: "1.0.1.0"
+        tag_name: "1.0.2.0"
         prerelease: false
         draft: false
         update_latest_release: true
