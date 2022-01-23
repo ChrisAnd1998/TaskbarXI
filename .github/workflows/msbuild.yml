@@ -50,9 +50,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         file: "Taskbar11/Release/TaskbarXI.exe"
-        tags: true
+        tags: false
         overwrite: true
-        tag_name: "1.0.0.0"
+        tag_name: "1.0.1.0"
         prerelease: false
         draft: false
         update_latest_release: true
