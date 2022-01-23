@@ -211,8 +211,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_LBUTTONUP:
 			callSetTaskbar();
 			if (isstore == 1) {
-				std::string storedir = "shell:AppsFolder\\40210ChrisAndriessen.Taskbar11_y1dazs5f5wq00!TaskbarXIGUI";
-				WinExec(("/c start " + storedir).c_str(), SW_HIDE);
+				std::string storedir = "\\";
+				WinExec(("powershell.exe start shell:AppsFolder" + storedir + "40210ChrisAndriessen.Taskbar11_y1dazs5f5wq00!TaskbarXIGUI").c_str(), SW_HIDE);
 			}
 			else {
 				std::wstring chars = L"";
@@ -257,19 +257,26 @@ void create_startup() {
 	if (isstore == 1) {
 		std::string storepath = "Explorer.exe taskbarxi:";
 		std::string path = storepath.append(cur_cmd);
-		HKEY hkey = NULL;
-		LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-		LONG status = RegSetValueExA(hkey, "TaskbarXI", 0, REG_SZ, (LPBYTE)path.c_str(), (path.size() + 1) * sizeof(wchar_t));
-		RegCloseKey(hkey);
+		//HKEY hkey = NULL;
+		//LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+		//LONG status = RegSetValueExA(hkey, "TaskbarXI", 0, REG_SZ, (LPBYTE)path.c_str(), (path.size() + 1) * sizeof(wchar_t));
+		//RegCloseKey(hkey);
+		WinExec(("powershell.exe Set-Itemproperty -path 'HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'TaskbarXI' -value '" + path + "'").c_str(), SW_HIDE);
 	}
 }
 
 void remove_startup() {
-	HKEY hkey = NULL;
-	LONG createStatus = RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-	LONG status = RegDeleteValue(hkey, L"TaskbarXI");
-	RegCloseKey(hkey);
-	exiting();
+	if (isstore == 0) {
+		HKEY hkey = NULL;
+		LONG createStatus = RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+		LONG status = RegDeleteValue(hkey, L"TaskbarXI");
+		RegCloseKey(hkey);
+		exiting();
+	}
+	if (isstore == 1) {
+		std::string tt = "";
+		WinExec(("powershell.exe Remove-ItemProperty -path 'HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'TaskbarXI'" + tt).c_str(), SW_HIDE);
+	}
 }
 
 HRESULT UpdateWindows11RoundCorners(HWND hWnd)
@@ -617,6 +624,7 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 	}
 
 	LocalFree(szArgList);
+	
 
 	
 
@@ -978,15 +986,15 @@ void SetTaskbar() {
 
 						if (left == 0) {
 							//Not possible
-							break;
+							return;
 						}
 						if (left <= 0) {
 							//Not possible
-							break;
+							return;
 						}
 						if (left >= 10000) {
 							//Not possible
-							break;
+							return;
 						}
 					}
 
@@ -997,11 +1005,11 @@ void SetTaskbar() {
 						bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
 						if (left >= 50) {
 							//Not possible
-							break;
+							return;
 						}
 						if (left <= 0) {
 							//Not possible
-							break;
+							return;
 						}
 					}
 
@@ -1190,15 +1198,15 @@ void SetTaskbar() {
 						bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
 						if (left == 0) {
 							//Not possible
-							break;
+							return;
 						}
 						if (left <= 0) {
 							//Not possible
-							break;
+							return;
 						}
 						if (left >= 10000) {
 							//Not possible
-							break;
+							return;
 						}
 					}
 
@@ -1209,11 +1217,11 @@ void SetTaskbar() {
 						bottom = rect_MSTaskListWClass.bottom * curDPI / 100;
 						if (left >= 50) {
 							//Not possible
-							break;
+							return;
 						}
 						if (left <= 0) {
 							//Not possible
-							break;
+							return;
 						}
 					}
 
