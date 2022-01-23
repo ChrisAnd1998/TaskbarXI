@@ -53,6 +53,6 @@ jobs:
         tags: true
         overwrite: true
         tag_name: "Nightly"
-        prerelease: true
+        prerelease: false
         draft: false
         update_latest_release: true
