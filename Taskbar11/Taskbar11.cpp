@@ -10,6 +10,7 @@
 #include <iostream>
 #include <thread>
 #include <dwmapi.h>
+#include <string> 
 
 //Notifyicon
 #include <shellapi.h>
@@ -208,14 +209,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (lParam)
 		{
 		case WM_LBUTTONUP:
-			boxopen = true;
 			callSetTaskbar();
-			if (MessageBox(NULL, L"Do you want to EXIT TaskbarXI?", L"TaskbarXI", MB_YESNO) == IDYES)
-			{
-				exiting();
+			if (isstore == 1) {
+				std::string storedir = "shell:AppsFolder\\40210ChrisAndriessen.Taskbar11_y1dazs5f5wq00!TaskbarXIGUI";
+				WinExec(("/c start " + storedir).c_str(), SW_HIDE);
 			}
 			else {
-				boxopen = false;
+				std::wstring chars = L"";
+				chars += (wchar_t)34;
+				std::string quote(chars.begin(), chars.end());
+				std::string guidir = cur_dir;
+				guidir.replace(guidir.find("TaskbarXI.exe"), sizeof("TaskbarXI.exe") - 1, "TaskbarXIMFCGUI.exe");
+				WinExec((quote + guidir + quote).c_str(), SW_HIDE);
 			}
 			break;
 		case WM_RBUTTONUP:
@@ -506,7 +511,8 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 		}
 		if (wcscmp(szArgList[i], L"-radius") == 0) {
 			corner_Radius = _wtoi(szArgList[++i]);
-			cur_cmd.append(" -radius " + corner_Radius);
+			std::string xcr = std::to_string(corner_Radius);
+			cur_cmd.append(" -radius " + xcr);
 		}
 		if (wcscmp(szArgList[i], L"-ignoremax") == 0) {
 			ignoremax = 1;
@@ -530,11 +536,13 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 		}
 		if (wcscmp(szArgList[i], L"-expandspeed") == 0) {
 			expandspeed = _wtoi(szArgList[++i]);
-			cur_cmd.append(" -expandspeed " + expandspeed);
+			std::string xcr = std::to_string(expandspeed);
+			cur_cmd.append(" -expandspeed " + xcr);
 		}
 		if (wcscmp(szArgList[i], L"-shrinkspeed") == 0) {
 			shrinkspeed = _wtoi(szArgList[++i]);
-			cur_cmd.append(" -shrinkspeed " + shrinkspeed);
+			std::string xcr = std::to_string(shrinkspeed);
+			cur_cmd.append(" -shrinkspeed " + xcr);
 		}
 
 		if (wcscmp(szArgList[i], L"-blur") == 0) {
@@ -609,6 +617,8 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 	}
 
 	LocalFree(szArgList);
+
+	
 
 	if (corner_Radius == 0) {
 		corner_Radius = 15;
