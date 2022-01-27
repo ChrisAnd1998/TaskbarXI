@@ -1119,8 +1119,10 @@ void SetTaskbar() {
 							if (rect_TrayNotifyWnd.left != trayleft) {
 								SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 							}
-							else {
-							//	std::wcout << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
+							
+
+							if (rect_TrayNotifyWnd.left <= 100) {
+								SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 							}
 						}
 
