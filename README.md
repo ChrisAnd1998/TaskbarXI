@@ -26,7 +26,7 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 * **`-stop`** parameter (Stops TaskbarXI and reverts the taskbar to default)
 * **`-restart`** parameter (Does not refresh the taskbar region when starting)
 * **`-square`** parameter (Uses square corners instead of rounded corners)
-* **`-radius <radius>`** parameter (Define the corner radius you want to be used) <-- @officialLennox
+* **`-radius <radius>`** parameter (Define the corner radius you want to be used)
 * **`-ignoremax`** parameter (Does not revert the taskbar on maximized window)
 * **`-notray`** parameter (Disables system tray icon)
 * **`-hidetraywnd`** parameter (Hides the system tray area)
