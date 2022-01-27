@@ -126,16 +126,21 @@ VOID CALLBACK WinEventProcCallback(HWINEVENTHOOK hWinEventHook, DWORD dwEvent, H
 	if (eventtrigger == 0) {
 		if (working == 0) {
 			eventtrigger = 1;
-			int length = 7;
+			int length = 20;
 			wchar_t* title = new wchar_t[length];
 			GetClassName(hwnd, title, length);
-			if (wcscmp(title, L"MSTask") == 0) {
+			//std::wcout << title << std::endl;
+			if (wcscmp(title, L"MSTaskListWClass") == 0) {
 				callSetTaskbar();
 			}
-			if (wcscmp(title, L"Toolba") == 0) {
+			if (wcscmp(title, L"MSTaskSwWClass") == 0) {
+				callSetTaskbar();
+			}
+			if (wcscmp(title, L"ToolbarWindow32") == 0) {
 				callSetTaskbar();
 			}
 			title = NULL;
+			free(title);
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			eventtrigger = 0;
 		}
@@ -787,6 +792,9 @@ void SetTaskbar() {
 		if (curreg_Check_region == 0) {
 			std::wcout << "HRGN invalid!" << std::endl;
 
+
+
+
 			HWND Explorer = NULL;
 
 			do
@@ -820,7 +828,7 @@ void SetTaskbar() {
 			abort;
 		}
 
-		std::wcout << "Clearing maximized window list..." << std::endl;
+		//std::wcout << "Clearing maximized window list..." << std::endl;
 
 		maxCountChanged = 0;
 		maximized_Count = 0;
@@ -875,8 +883,10 @@ void SetTaskbar() {
 				//if (wcscmp(title, L"Shell_TrayWnd") != 0 && wcscmp(title, L"Shell_SecondaryTrayWnd") != 0) {
 				if (isataskbar == 0) {
 					//free(title);
+					
 
 					std::wcout << "hWID invalid!" << std::endl;
+
 
 					HWND Explorer = NULL;
 
@@ -938,6 +948,12 @@ void SetTaskbar() {
 					SendMessage(RebarWindow32, WM_SETREDRAW, FALSE, NULL);
 					SendMessage(MSTaskSwWClass, WM_SETREDRAW, FALSE, NULL);
 					SendMessage(GetParent(tb), WM_SETREDRAW, FALSE, NULL);
+					SendMessage(GetParent(GetParent(tb)), WM_SETREDRAW, FALSE, NULL);
+
+					SetWindowPos(tb, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+
+
+
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1080,6 +1096,12 @@ void SetTaskbar() {
 						if (newtbrect.right != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right + 1 != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right - 1 != abs(currenttbrect.right) * curDPI / 100) {
 							if (smoothresize == 0) {
 								SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
+								
+								
+								//MessageBox(NULL, L"", L"", MB_OK);
+								//SetWindowPos(Shell_TrayWnd, NULL, 500, 50, 1000, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+
+								//UpdateWindows11RoundCorners(Shell_TrayWnd);
 							}
 							else {
 								//std::thread{ SetWindowRegionAnimated, Shell_TrayWnd, region_Both }.detach();
@@ -1098,14 +1120,16 @@ void SetTaskbar() {
 								SetWindowRgn(Shell_TrayWnd, region_Both, TRUE);
 							}
 							else {
-								std::wcout << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
+							//	std::wcout << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << " does not need new HRGN!" << std::endl;
 							}
 						}
 
 						region_Both = NULL;
 					}
 
-					std::wcout << "Done with " << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << std::endl;
+				//	std::wcout << "Done with " << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << std::endl;
+
+					//UpdateWindows11RoundCorners(Shell_TrayWnd);
 
 					// dispose
 					Shell_TrayWnd = NULL;
@@ -1160,6 +1184,12 @@ void SetTaskbar() {
 					SendMessage(WorkerW, WM_SETREDRAW, FALSE, NULL);
 					SendMessage(MSTaskListWClass, WM_SETREDRAW, FALSE, NULL);
 					SendMessage(GetParent(tb), WM_SETREDRAW, FALSE, NULL);
+					SendMessage(GetParent(GetParent(tb)), WM_SETREDRAW, FALSE, NULL);
+
+
+					SetWindowPos(tb, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
+
+
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1271,12 +1301,12 @@ void SetTaskbar() {
 							}
 						}
 						else {
-							std::wcout << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
+						//	std::wcout << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
 						}
 						region_Shell_SecondaryTrayWnd = NULL;
 					}
 
-					std::wcout << "Done with " << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << std::endl;
+				//	std::wcout << "Done with " << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << std::endl;
 
 					// dispose
 					left = NULL;
