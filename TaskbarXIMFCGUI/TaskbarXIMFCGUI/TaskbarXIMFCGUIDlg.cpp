@@ -213,7 +213,7 @@ void CTaskbarXIMFCGUIDlg::OnPaint()
 	auto x6 = _T("Chris Andriessen");
 	author.SetWindowText(x6);
 
-	auto x7 = _T("1.0.2.0");
+	auto x7 = _T("1.0.3.0");
 	versionval.SetWindowText(x7);
 
 	auto x8 = _T("Github: @PrincessAkira, @officialLennox,\n @dmitryaleshin");
