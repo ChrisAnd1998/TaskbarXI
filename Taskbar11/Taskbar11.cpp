@@ -952,7 +952,7 @@ void SetTaskbar() {
 
 					SetWindowPos(tb, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 
-
+					ShowWindow(DesktopWindowContentBridge, SW_SHOW);
 
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
@@ -1189,6 +1189,7 @@ void SetTaskbar() {
 
 					SetWindowPos(tb, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 
+					ShowWindow(DesktopWindowContentBridge, SW_SHOW);
 
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
