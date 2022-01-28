@@ -24,7 +24,7 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 
 ## **Parameters**
 **With 1.0.3 release all Parameters can be changed with GUI**,<br/><br/> 
-If you want still youse console here are console Parameters:
+If you want still use change properties with console, here are Parameters:
 * **`-stop`** parameter (Stops TaskbarXI and reverts the taskbar to default)
 * **`-restart`** parameter (Does not refresh the taskbar region when starting)
 * **`-square`** parameter (Uses square corners instead of rounded corners)
