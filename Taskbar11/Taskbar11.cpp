@@ -953,6 +953,7 @@ void SetTaskbar() {
 					SetWindowPos(tb, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 
 					ShowWindow(DesktopWindowContentBridge, SW_SHOW);
+					ShowWindow(Shell_TrayWnd, SW_SHOW);
 
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
@@ -1000,11 +1001,13 @@ void SetTaskbar() {
 						right = abs(rect_MSTaskSwWClass.right - rect_Shell_TrayWnd.left + 3) * curDPI / 100;
 						bottom = rect_MSTaskSwWClass.bottom * curDPI / 100;
 
+
+
 						if (left == 0) {
 							//Not possible
 							return;
 						}
-						if (left <= 0) {
+						if (left <= 10) {
 							//Not possible
 							return;
 						}
@@ -1193,6 +1196,8 @@ void SetTaskbar() {
 
 					ShowWindow(DesktopWindowContentBridge, SW_SHOW);
 
+					ShowWindow(Shell_SecondaryTrayWnd, SW_SHOW);
+
 
 					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
 					GetWindowRgn(tb, currenttbreg);
@@ -1233,7 +1238,7 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
-						if (left <= 0) {
+						if (left <= 10) {
 							//Not possible
 							return;
 						}
@@ -1290,6 +1295,7 @@ void SetTaskbar() {
 						if (newtbrect.right != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right - 1 != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right + 1 != abs(currenttbrect.right) * curDPI / 100) {
 							if (smoothresize == 0) {
 								SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
+								std::wcout << left << std::endl;
 							}
 							else {
 								//	std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
