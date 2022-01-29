@@ -1023,6 +1023,11 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
+						if ((abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100) <= 10) {
+							//Not possible
+							return;
+						}
+
 					}
 
 					if (taskbariscenter == 0) {
@@ -1043,6 +1048,10 @@ void SetTaskbar() {
 							return;
 						}
 						if (left >= right) {
+							//Not possible
+							return;
+						}
+						if ((abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100) <= 10) {
 							//Not possible
 							return;
 						}
