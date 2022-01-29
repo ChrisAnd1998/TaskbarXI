@@ -1015,6 +1015,14 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
+						if (right <= left) {
+							//Not possible
+							return;
+						}
+						if (left >= right) {
+							//Not possible
+							return;
+						}
 					}
 
 					if (taskbariscenter == 0) {
@@ -1027,6 +1035,14 @@ void SetTaskbar() {
 							return;
 						}
 						if (left <= 0) {
+							//Not possible
+							return;
+						}
+						if (right <= left) {
+							//Not possible
+							return;
+						}
+						if (left >= right) {
 							//Not possible
 							return;
 						}
@@ -1246,6 +1262,14 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
+						if (right <= left) {
+							//Not possible
+							return;
+						}
+						if (left >= right) {
+							//Not possible
+							return;
+						}
 					}
 
 					if (taskbariscenter == 0) {
@@ -1258,6 +1282,14 @@ void SetTaskbar() {
 							return;
 						}
 						if (left <= 0) {
+							//Not possible
+							return;
+						}
+						if (right <= left) {
+							//Not possible
+							return;
+						}
+						if (left >= right) {
 							//Not possible
 							return;
 						}
@@ -1295,7 +1327,7 @@ void SetTaskbar() {
 						if (newtbrect.right != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right - 1 != abs(currenttbrect.right) * curDPI / 100 && newtbrect.right + 1 != abs(currenttbrect.right) * curDPI / 100) {
 							if (smoothresize == 0) {
 								SetWindowRgn(Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd, TRUE);
-								std::wcout << left << std::endl;
+								//std::wcout << left << std::endl;
 							}
 							else {
 								//	std::thread{ SetWindowRegionAnimated, Shell_SecondaryTrayWnd, region_Shell_SecondaryTrayWnd }.detach();
