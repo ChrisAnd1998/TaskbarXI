@@ -5,7 +5,7 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 
 
 
-**Features (at this moment)**
+## **Features (Release 1.0.3)**
 * Turn the Windows 11 Taskbar into a dock.  
 * Turn the tray/clock into a dock.  
 * Support multiple monitors.  
@@ -13,16 +13,18 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 * Switch back to normal on maximized window.  
 * Support left and centered taskbar.
 * Tray icon to exit TaskbarXI and revert to the default taskbar.
+* Simple GUI to change the settings.  
 
 &nbsp;
 
-**Features (upcoming)**
-* Simple GUI to change the settings.  
+## **Upcoming Features**
 * Change taskbar background style and color.  
 
 &nbsp;
 
-**Parameters**
+## **Parameters**
+**With 1.0.3 release all Parameters can be changed with GUI**,<br/><br/> 
+If you still want to change properties with console, here are Parameters:
 * **`-stop`** parameter (Stops TaskbarXI and reverts the taskbar to default)
 * **`-restart`** parameter (Does not refresh the taskbar region when starting)
 * **`-square`** parameter (Uses square corners instead of rounded corners)
@@ -41,8 +43,9 @@ An application written in C++ to modify the Windows 11 Taskbar. Current version 
 * **`-blur`** parameter (Makes the taskbar blurred) <-- **EXPERIMENTAL**
 
 
+
   
-**Example:** `"TaskbarXI.exe" -ignoremax -expandspeed 100 -square`  
+**CMD Example:** `"TaskbarXI.exe" -ignoremax -expandspeed 100 -square`  
 
 
 
