@@ -1023,7 +1023,7 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
-						if ((abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100) <= 10) {
+						if ((abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100) <= left) {
 							//Not possible
 							return;
 						}
@@ -1051,7 +1051,7 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
-						if ((abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100) <= 10) {
+						if ((abs(rect_TrayNotifyWnd.left - rect_Shell_TrayWnd.left - 5) * curDPI / 100) <= left) {
 							//Not possible
 							return;
 						}
