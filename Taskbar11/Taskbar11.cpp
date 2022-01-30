@@ -188,7 +188,8 @@ void exiting() {
 				SendMessage(MSTaskListWClass, WM_SETREDRAW, TRUE, NULL);
 			}
 
-			SendMessage(GetParent(tb), WM_SETREDRAW, FALSE, NULL);
+			SendMessage(GetParent(tb), WM_SETREDRAW, TRUE, NULL);
+			SendMessage(GetParent(GetParent(tb)), WM_SETREDRAW, TRUE, NULL);
 
 			ShowWindow(ToolbarWindow32, SW_SHOW);
 			ShowWindow(SysPager, SW_SHOW);
@@ -726,9 +727,10 @@ int WINAPI WinMain(_In_opt_ HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR 
 		if (restart == 0) {
 			HRGN region_Empty = CreateRectRgn(0, 0, 0, 0);
 			SetWindowRgn(tb, region_Empty, FALSE);
+			SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
 		}
 
-		SendMessage(tb, WM_THEMECHANGED, TRUE, NULL);
+		
 
 		//SendMessage(tb, WM_SETTINGCHANGE, TRUE, NULL);
 	}
@@ -1027,6 +1029,10 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
+						if (left == NULL) {
+							//Not possible
+							return;
+						}
 
 					}
 
@@ -1055,7 +1061,13 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
+						if (left == NULL) {
+							//Not possible
+							return;
+						}
 					}
+
+					std::wcout << left << std::endl;
 
 					if (sticky == 1) {
 						// Cool feature but to have this running stable all the tray icons have to be disabled to prevent the system tray area from refreshing.
@@ -1254,6 +1266,8 @@ void SetTaskbar() {
 					int right;
 					int bottom;
 
+
+
 					if (taskbariscenter == 1) {
 						left = abs(rect_MSTaskListWClass.right - rect_Shell_SecondaryTrayWnd.right + 2) * curDPI / 100;
 						top = 0 * curDPI / 100;
@@ -1276,6 +1290,10 @@ void SetTaskbar() {
 							return;
 						}
 						if (left >= right) {
+							//Not possible
+							return;
+						}
+						if (left == NULL) {
 							//Not possible
 							return;
 						}
@@ -1302,7 +1320,13 @@ void SetTaskbar() {
 							//Not possible
 							return;
 						}
+						if (left == NULL) {
+							//Not possible
+							return;
+						}
 					}
+
+					std::wcout << left << std::endl;
 
 					HRGN region_Shell_SecondaryTrayWnd;
 
