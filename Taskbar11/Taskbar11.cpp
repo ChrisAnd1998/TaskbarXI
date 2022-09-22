@@ -458,12 +458,12 @@ void SetWindowRegionAnimated(HWND hWND, HRGN region) {
 			if (square == 0) {
 				HRGN framereg = CreateRoundRectRgn(left, top, right, bottom, corner_Radius, corner_Radius);
 				SetWindowRgn(hWND, framereg, TRUE);
-				DeleteObject(framereg);
+				framereg = NULL;
 			}
 			else {
 				HRGN framereg = CreateRectRgn(left, top, right, bottom);
 				SetWindowRgn(hWND, framereg, TRUE);
-				DeleteObject(framereg);
+				framereg = NULL;
 			}
 
 			currentTime = NULL;
@@ -1166,7 +1166,7 @@ void SetTaskbar() {
 							}
 						}
 
-						DeleteObject(region_Both);
+						region_Both = NULL;
 					}
 
 				//	std::wcout << "Done with " << "Shell_TrayWnd" << " @ " << Shell_TrayWnd << std::endl;
@@ -1377,7 +1377,7 @@ void SetTaskbar() {
 						else {
 						//	std::wcout << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << " does not need new HRGN!" << std::endl;
 						}
-						DeleteObject(region_Shell_SecondaryTrayWnd);
+						region_Shell_SecondaryTrayWnd = NULL;
 					}
 
 				//	std::wcout << "Done with " << "Shell_SecondaryTrayWnd" << " @ " << Shell_SecondaryTrayWnd << std::endl;
@@ -1387,7 +1387,7 @@ void SetTaskbar() {
 					right = NULL;
 					bottom = NULL;
 					top = NULL;
-					DeleteObject(currenttbreg);
+					currenttbreg = NULL;
 					Shell_SecondaryTrayWnd = NULL;
 					//Start = NULL;
 					WorkerW = NULL;
