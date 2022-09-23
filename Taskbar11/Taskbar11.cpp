@@ -872,7 +872,7 @@ void SetTaskbar() {
 				size = NULL;
 
 				curreg_Check_handle = NULL;
-				curreg_Check_region = NULL;
+				DeleteObject(curreg_Check_region);
 
 				//int length = 256;
 				//wchar_t* title = new wchar_t[length];
@@ -958,10 +958,10 @@ void SetTaskbar() {
 					ShowWindow(Shell_TrayWnd, SW_SHOW);
 
 
-					HRGN currenttbreg = CreateRectRgn(0, 0, 0, 0);
-					GetWindowRgn(tb, currenttbreg);
+					HRGN currenttbregM = CreateRectRgn(0, 0, 0, 0);
+					GetWindowRgn(tb, currenttbregM);
 					RECT currenttbrect;
-					GetRgnBox(currenttbreg, &currenttbrect);
+					GetRgnBox(currenttbregM, &currenttbrect);
 
 					RECT rect_Shell_TrayWnd;
 					GetWindowRect(Shell_TrayWnd, &rect_Shell_TrayWnd);
@@ -1192,6 +1192,7 @@ void SetTaskbar() {
 					ToolbarWindow32 = NULL;
 					SysPager = NULL;
 					Button = NULL;
+					DeleteObject(currenttbregM);
 
 					free(Shell_TrayWnd);
 					free(Start);
@@ -1387,7 +1388,7 @@ void SetTaskbar() {
 					right = NULL;
 					bottom = NULL;
 					top = NULL;
-					currenttbreg = NULL;
+					DeleteObject(currenttbreg);
 					Shell_SecondaryTrayWnd = NULL;
 					//Start = NULL;
 					WorkerW = NULL;
@@ -1417,6 +1418,8 @@ void SetTaskbar() {
 				th.join();
 			}
 		}
+
+		DeleteObject(curreg_Check_region);
 
 		working = 0;
 	}
